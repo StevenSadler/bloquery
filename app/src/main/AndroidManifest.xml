@@ -2,7 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.stevensadler.android.bloquery">
 
-
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name=".BloqueryApplication"
@@ -22,8 +23,12 @@
             </intent-filter>
         </activity>
 
-        <uses-permission android:name="android.permission.INTERNET" />
-        <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+        <meta-data
+            android:name="com.parse.APPLICATION_ID"
+            android:value="q6U780b954xz5kAa9xHobJSnhxtIs2xINT0fx3hV" />
+        <meta-data
+            android:name="com.parse.CLIENT_KEY"
+            android:value="V674zzwGQtMeKkasgNjT6aCvEfkNfWD5qzUOWnEo" />
 
     </application>
 

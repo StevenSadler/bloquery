@@ -29,8 +29,8 @@ public class BloqueryActivity extends AppCompatActivity {
             }
         });
 
-        ParseObject testObject = new ParseObject("Test");
-        testObject.put("TestNumber", 4.5);
+        ParseObject testObject = new ParseObject("TestObject");
+        testObject.put("fooo", "barr");
         testObject.saveInBackground();
     }
 
