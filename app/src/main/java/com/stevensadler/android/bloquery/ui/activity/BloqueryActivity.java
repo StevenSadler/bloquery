@@ -1,5 +1,6 @@
-package com.stevensadler.android.bloquery;
+package com.stevensadler.android.bloquery.ui.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -9,7 +10,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.parse.ParseObject;
+import com.parse.ParseAnonymousUtils;
+import com.parse.ParseUser;
+import com.stevensadler.android.bloquery.R;
 
 public class BloqueryActivity extends AppCompatActivity {
 
@@ -29,9 +32,34 @@ public class BloqueryActivity extends AppCompatActivity {
             }
         });
 
-        ParseObject testObject = new ParseObject("TestObject");
-        testObject.put("fooo", "barr");
-        testObject.saveInBackground();
+//        ParseObject testObject = new ParseObject("TestObject");
+//        testObject.put("fooo", "barr");
+//        testObject.saveInBackground();
+
+        // Determine whether the current user is an anonymous user
+        if (ParseAnonymousUtils.isLinked(ParseUser.getCurrentUser())) {
+            // if user is anonymous, send the user to LoginSignupActivity.class
+            Intent intent = new Intent(BloqueryActivity.this,
+                    LoginSignupActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+            // if current user is NOT anonymous user
+            // get current user data from Parse.com
+            ParseUser currentUser = ParseUser.getCurrentUser();
+            if (currentUser != null) {
+                // send logged in users to Welcome.class
+                Intent intent = new Intent(BloqueryActivity.this, Welcome.class);
+                startActivity(intent);
+                finish();
+            } else {
+                // send user to LoginSignupActivity.class
+                Intent intent = new Intent(BloqueryActivity.this,
+                        LoginSignupActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        }
     }
 
     @Override

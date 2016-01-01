@@ -1,8 +1,10 @@
-package com.stevensadler.android.bloquery;
+package com.stevensadler.android.bloquery.ui;
 
 import android.app.Application;
 
 import com.parse.Parse;
+import com.parse.ParseACL;
+import com.parse.ParseUser;
 
 /**
  * Created by Steven on 12/29/2015.
@@ -25,5 +27,13 @@ public class BloqueryApplication extends Application {
         Parse.enableLocalDatastore(this);
 
         Parse.initialize(this);
+
+        ParseUser.enableAutomaticUser();
+        ParseACL defaultACL = new ParseACL();
+
+        // if you would like all objects to be private by default, remove this line
+        defaultACL.setPublicReadAccess(true);
+
+        ParseACL.setDefaultACL(defaultACL, true);
     }
 }
