@@ -4,7 +4,9 @@ import android.app.Application;
 
 import com.parse.Parse;
 import com.parse.ParseACL;
+import com.parse.ParseObject;
 import com.parse.ParseUser;
+import com.stevensadler.android.bloquery.api.model.Question;
 
 /**
  * Created by Steven on 12/29/2015.
@@ -26,6 +28,7 @@ public class BloqueryApplication extends Application {
         // https://parse.com/docs/android/guide#local-datastore
         Parse.enableLocalDatastore(this);
 
+        ParseObject.registerSubclass(Question.class);
         Parse.initialize(this);
 
         ParseUser.enableAutomaticUser();

@@ -1,5 +1,6 @@
 package com.stevensadler.android.bloquery.ui.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -33,6 +34,11 @@ public class Welcome extends AppCompatActivity {
             public void onClick(View v) {
                 // logout current user
                 ParseUser.logOut();
+
+                // send user to LoginSignupActivity.class
+                Intent intent = new Intent(Welcome.this,
+                        LoginSignupActivity.class);
+                startActivity(intent);
                 finish();
             }
         });
