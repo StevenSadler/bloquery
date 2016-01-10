@@ -1,6 +1,7 @@
 package com.stevensadler.android.bloquery.ui.adapter;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,52 +11,45 @@ import com.stevensadler.android.bloquery.R;
 import com.stevensadler.android.bloquery.api.model.Question;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 /**
- * Created by Steven on 1/3/2016.
+ * Created by Steven on 1/7/2016.
  */
-public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.QuestionAdapterViewHolder> {
-
-    public static interface DataSource {
-        public int getItemCount(QuestionAdapter questionAdapter);
-    }
+public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.QuestionHolder> {
 
     public static interface Delegate {
         public void onQuestionClicked(QuestionAdapter questionAdapter, Question question);
     }
 
-    private static String TAG = QuestionAdapter.class.getSimpleName();
+    private String TAG = QuestionAdapter.class.getSimpleName();
 
+    private List<Question> questions;
     private WeakReference<Delegate> delegate;
-    private WeakReference<DataSource> dataSource;
 
-    public QuestionAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int index) {
-        View inflate = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.question_item, viewGroup, false);
-        return new QuestionAdapterViewHolder(inflate);
+    public QuestionAdapter(List<Question> questions) {
+        this.questions = questions;
     }
 
     @Override
-    public void onBindViewHolder(QuestionAdapterViewHolder questionAdapterViewHolder, int index) {
-        //
+    public QuestionHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+        View view = layoutInflater
+                .inflate(R.layout.question_item, parent, false);
+        return new QuestionHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(QuestionHolder holder, int position) {
+        holder.update(questions.get(position));
+
+        Log.d(TAG, "onBindViewHolder " + position);
+        Log.d(TAG, "breakpoint");
     }
 
     @Override
     public int getItemCount() {
-        if (getDataSource() == null) {
-            return 0;
-        }
-        return getDataSource().getItemCount(this);
-    }
-
-    public DataSource getDataSource() {
-        if (dataSource == null) {
-            return null;
-        }
-        return dataSource.get();
-    }
-
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = new WeakReference<DataSource>(dataSource);
+        return questions.size();
     }
 
     public Delegate getDelegate() {
@@ -69,21 +63,36 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
         this.delegate = new WeakReference<Delegate>(delegate);
     }
 
-    class QuestionAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        TextView body;
 
-        Question question;
 
-        public QuestionAdapterViewHolder(View questionView) {
-            super(questionView);
-            body = (TextView) questionView.findViewById(R.id.tv_question_item_body);
+    /*
+     * QuestionHolder class
+     */
 
-            questionView.setOnClickListener(this);
+    class QuestionHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        public TextView questionTextView;
+
+        private Question question;
+
+        public QuestionHolder(View itemView) {
+            super(itemView);
+            questionTextView = (TextView) itemView.findViewById(R.id.tv_question_item_body);
+            questionTextView.setOnClickListener(this);
+        }
+
+        void update(Question question) {
+            Log.d(TAG, "update");
+            this.question = question;
+
+            String text = question.getBody();
+            questionTextView.setText(text);
         }
 
         @Override
-        public void onClick(View veiw) {
+        public void onClick(View view) {
+            Log.d(TAG, "onClick");
             if (getDelegate() != null) {
                 getDelegate().onQuestionClicked(QuestionAdapter.this, question);
             }

@@ -1,15 +1,14 @@
 package com.stevensadler.android.bloquery.ui.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import com.parse.FindCallback;
@@ -18,15 +17,18 @@ import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.stevensadler.android.bloquery.R;
+import com.stevensadler.android.bloquery.api.model.ParseProxyObject;
 import com.stevensadler.android.bloquery.api.model.Question;
 import com.stevensadler.android.bloquery.ui.fragment.QuestionListFragment;
+import com.stevensadler.android.bloquery.ui.fragment.SingleQuestionFragment;
 
 import java.util.List;
 
-public class BloqueryActivity extends AppCompatActivity {
+public class BloqueryActivity extends AppCompatActivity implements QuestionListFragment.Delegate, SingleQuestionFragment.Delegate {
 
     private static String TAG = BloqueryActivity.class.getSimpleName();
 
+    private boolean hasAddedFirstFragment = false;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,24 +36,30 @@ public class BloqueryActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
-//        ParseObject testObject = new ParseObject("TestObject");
-//        testObject.put("fooo", "barr");
-//        testObject.saveInBackground();
-
 //        TestQuestionCreator testQC = new TestQuestionCreator();
 //        testQC.addQuestion("What would you do if you were the one survivor in a plane crash");
 //        testQC.addQuestion("If you woke up and had 2,000 unread emails and could only answer 300 of them how would you choose which ones to answer?");
 //        testQC.addQuestion("Who would win a fight between Spiderman and Batman");
 //        testQC.addQuestion("What did you have for breakfast?");
+//        testQC.addQuestion("What is your favorite 90's jam?");
+//        testQC.addQuestion("If you had a machine that produced $100 for life, what would you be willing to pay for it?");
+//        testQC.addQuestion("Describe the color yellow to someone who is blind");
+//        testQC.addQuestion("If you were asked to unload a 747 full of jellybeans, what would you do?");
+//        testQC.addQuestion("How many people flew out of Chicago last year?");
+//        testQC.addQuestion("Who is your favorite Disney princess?");
+//        testQC.addQuestion("Why is the third hand on a watch called the second hand?");
+//        testQC.addQuestion("Why isn't there mouse-flavored cat food?");
+//        testQC.addQuestion("Why is the time of day with the slowest traffic called rush hour?");
+//        testQC.addQuestion("Why is abbreviated such a long word?");
+//        testQC.addQuestion("Why is a boxing ring square?");
+//        testQC.addQuestion("What do you call a male ladybug?");
+//        testQC.addQuestion("If a person owns a piece of land, do they own it all the down to the core of the Earth?");
+//        testQC.addQuestion("Why isn't phonetic spelled the way it sounds?");
+//        testQC.addQuestion("Why are there interstates in Hawaii?");
+//        testQC.addQuestion("Why are there flotation devices in the seats of airplanes instead of parachutes?");
+//        testQC.addQuestion("Have you ever imagined a world without hypothetical situations?");
+//        testQC.addQuestion("Why don't sheep shrink when it rains?");
+//        testQC.addQuestion("Why do toasters always have a setting that burns the toast to a horrible crisp no one would eat?");
 
         // Determine whether the current user is an anonymous user
         if (ParseAnonymousUtils.isLinked(ParseUser.getCurrentUser())) {
@@ -80,24 +88,14 @@ public class BloqueryActivity extends AppCompatActivity {
             }
         }
 
-        ParseQuery<Question> query = ParseQuery.getQuery("Question");
-        query.orderByAscending("body");
-        query.setLimit(3);
-        query.findInBackground(new FindCallback<Question>() {
-            @Override
-            public void done(List<Question> questions, ParseException e) {
-                if (e == null) {
-                    Log.d("questions", "Retrieved " + questions.size() + " questions");
+        if (isAirplaneModeOn(this)) {
+            Question question = new Question();
+            question.setBody("Airplane mode is on. No questions are available. Please turn Airplane mode off and click this text to view questions.");
+            addSingleQuestionFragment(question);
 
-                    getFragmentManager()
-                            .beginTransaction()
-                            .add(R.id.rv_fragment_question_list, QuestionListFragment.fragmentForQuestions(questions))
-                            .commit();
-                } else {
-                    Log.d("questions", "Error: " + e.getMessage());
-                }
-            }
-        });
+        } else {
+            addQuestionListFragment();
+        }
     }
 
     @Override
@@ -127,6 +125,108 @@ public class BloqueryActivity extends AppCompatActivity {
      */
     public void onQuestionClicked(QuestionListFragment questionListFragment, Question question) {
         // TODO: go to single question view
-        Log.d(TAG, "onQuestionClicked " + question.getBody());
+        Log.d(TAG, "onQuestionListClicked " + question.getBody());
+        addSingleQuestionFragment(question);
+    }
+
+    /*
+     * SingleQuestionFragment.Delegate
+     */
+    public void onQuestionClicked(SingleQuestionFragment singleQuestionFragment, Question question) {
+        // TODO: go to question list view
+        Log.d(TAG, "onSingleQuestionClicked " + question.getBody());
+        addQuestionListFragment();
+    }
+
+    /*
+     * Private methods
+     */
+
+    private void addQuestionListFragment() {
+        if (isAirplaneModeOn(this)) {
+            Toast.makeText(this, "Airplane mode is on. No questions are available.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        ParseQuery<Question> query = ParseQuery.getQuery("Question");
+        query.orderByAscending("body");
+        query.setLimit(20);
+        query.findInBackground(new FindCallback<Question>() {
+            @Override
+            public void done(List<Question> questions, ParseException e) {
+                if (e == null) {
+                    Log.d(TAG, "addQuestionListFragment callback: Retrieved " + questions.size() + " questions");
+
+                    QuestionListFragment fragment = new QuestionListFragment();
+                    Bundle bundle = new Bundle();
+
+                    int count = 0;
+                    for (Question question : questions) {
+                        Log.d(TAG, "onCreate  question[" + count + "] = " + question.getBody());
+
+                        ParseProxyObject parseProxyObject = new ParseProxyObject(question);
+                        bundle.putSerializable("" + count, parseProxyObject);
+                        count++;
+                    }
+                    bundle.putInt("size", count);
+                    fragment.setArguments(bundle);
+                    fragment.setDelegate(BloqueryActivity.this);
+
+                    if (hasAddedFirstFragment) {
+                        getFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fl_fragment_container, fragment, null)
+                                .addToBackStack(null)
+                                .commit();
+                    } else {
+                        hasAddedFirstFragment = true;
+                        getFragmentManager()
+                                .beginTransaction()
+                                .add(R.id.fl_fragment_container, fragment, null)
+                                .addToBackStack(null)
+                                .commit();
+                    }
+                } else {
+                    Log.d(TAG, "addQuestionListFragment callback: Error: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void addSingleQuestionFragment(Question question) {
+
+        Log.d(TAG, "addSingleQuestionFragment " + question.getBody());
+
+        SingleQuestionFragment fragment = new SingleQuestionFragment();
+        Bundle bundle = new Bundle();
+        ParseProxyObject parseProxyObject = new ParseProxyObject(question);
+        bundle.putSerializable("questionObject", parseProxyObject);
+        fragment.setArguments(bundle);
+        fragment.setDelegate(BloqueryActivity.this);
+
+        if (hasAddedFirstFragment) {
+            getFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fl_fragment_container, fragment, null)
+                    .addToBackStack(null)
+                    .commit();
+        } else {
+            hasAddedFirstFragment = true;
+            getFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.fl_fragment_container, fragment, null)
+                    .addToBackStack(null)
+                    .commit();
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private boolean isAirplaneModeOn(Context context) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1){
+        /* API 17 and above */
+            return Settings.Global.getInt(context.getContentResolver(), Settings.Global.AIRPLANE_MODE_ON, 0) != 0;
+        } else {
+        /* below */
+            return Settings.System.getInt(context.getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) != 0;
+        }
     }
 }

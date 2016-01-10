@@ -2,8 +2,6 @@ package com.stevensadler.android.bloquery.ui.fragment;
 
 import android.app.Fragment;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -12,100 +10,87 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.stevensadler.android.bloquery.R;
+import com.stevensadler.android.bloquery.api.model.ParseProxyObject;
 import com.stevensadler.android.bloquery.api.model.Question;
 import com.stevensadler.android.bloquery.ui.adapter.QuestionAdapter;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Steven on 1/3/2016.
+ * Created by Steven on 1/7/2016.
  */
-public class QuestionListFragment extends Fragment implements
-        QuestionAdapter.DataSource,
-        QuestionAdapter.Delegate {
+public class QuestionListFragment extends Fragment implements QuestionAdapter.Delegate {
 
-    private static final String BUNDLE_EXTRA_QUESTION = QuestionListFragment.class.getCanonicalName().concat("EXTRA_QUESTION");
-    private static String TAG = QuestionListFragment.class.getSimpleName();
-
-    public static QuestionListFragment fragmentForQuestions(List<Question> questions) {
-        Bundle arguments = new Bundle();
-        arguments.putLong(BUNDLE_EXTRA_QUESTION, 0l);
-        QuestionListFragment questionListFragment = new QuestionListFragment();
-        questionListFragment.setArguments(arguments);
-        return questionListFragment;
+    public static interface Delegate {
+        public void onQuestionClicked(QuestionListFragment questionListFragment, Question question);
     }
 
-    private RecyclerView recyclerView;
-    private QuestionAdapter questionAdapter;
-    private List<Question> currentQuestions = new ArrayList<Question>();
+    //private static final String BUNDLE_QUESTIONS = QuestionListFragment.class.getCanonicalName().concat(".BUNDLE_QUESTIONS");
+    private static String TAG = QuestionListFragment.class.getSimpleName();
+
+    private static List<Question> mQuestions;
+
+    private RecyclerView mRecyclerView;
+    private QuestionAdapter mQuestionAdapter;
+
+    private WeakReference<Delegate> delegate;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
-        questionAdapter = new QuestionAdapter();
-        questionAdapter.setDataSource(this);
-        questionAdapter.setDelegate(this);
 
-//        recyclerView = (RecyclerView) getActivity().findViewById(R.id.rv_fragment_question_list);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-//        recyclerView.setItemAnimator(new DefaultItemAnimator());
-//        recyclerView.setAdapter(questionAdapter);
+        mQuestions = new ArrayList<Question>();
+
+        int size = getArguments().getInt("size");
+        for (int index = 0; index < size; index++) {
+            ParseProxyObject parseProxyObject = (ParseProxyObject) getArguments().getSerializable("" + index);
+            Question question = new Question();
+            question.setBody(parseProxyObject.getString("body"));
+            mQuestions.add(question);
+
+            Log.d(TAG, "onCreate  index = " + index + " question.getBody = " + question.getBody());
+        }
+        mQuestionAdapter = new QuestionAdapter(mQuestions);
+        mQuestionAdapter.setDelegate(this);
     }
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView");
-
-        View inflate = inflater.inflate(R.layout.fragment_question_list, container, false);
-        recyclerView = (RecyclerView) inflate.findViewById(R.id.rv_fragment_question_list);
+    public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle savedInstanceState) {
+        View view = layoutInflater.inflate(R.layout.fragment_question_list, viewGroup, false);
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.rv_fragment_question_list);
 
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
-
-        recyclerView.setLayoutManager(llm);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(questionAdapter);
-        return inflate;
+        mRecyclerView.setLayoutManager(llm);
+        mRecyclerView.setAdapter(mQuestionAdapter);
+        return view;
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        Log.d(TAG, "onActivityCreated");
-        super.onActivityCreated(savedInstanceState);
-
-//        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-//        recyclerView.setItemAnimator(new DefaultItemAnimator());
-//        recyclerView.setAdapter(questionAdapter);
-    }
-
-    /*
-     * QuestionAdapter.DataSource
-     */
-
-//    @Override
-//    public RssItem getRssItem(ItemAdapter itemAdapter, int position) {
-//        return currentItems.get(position);
-//    }
-//
-//    @Override
-//    public RssFeed getRssFeed(ItemAdapter itemAdapter, int position) {
-//        return currentFeed;
-//    }
-
-    @Override
-    public int getItemCount(QuestionAdapter questionAdapter) {
-        return currentQuestions.size();
-    }
 
     /*
      * QuestionAdapter.Delegate
      */
-
     @Override
     public void onQuestionClicked(QuestionAdapter questionAdapter, Question question) {
-        //
+        Log.d(TAG, "onQuestionClicked: " + question.getBody());
+        if (getDelegate() != null) {
+            getDelegate().onQuestionClicked(QuestionListFragment.this, question);
+        }
     }
+
+    public Delegate getDelegate() {
+        if (delegate == null) {
+            return null;
+        }
+        return delegate.get();
+    }
+
+    public void setDelegate(Delegate delegate) {
+        this.delegate = new WeakReference<Delegate>(delegate);
+    }
+
+
 }

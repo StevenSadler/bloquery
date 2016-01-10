@@ -9,6 +9,8 @@ import com.parse.ParseObject;
 @ParseClassName("Question")
 public class Question extends ParseObject {
 
+
+
     public String getBody() {
         return getString("body");
     }
