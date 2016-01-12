@@ -1,5 +1,6 @@
 package com.stevensadler.android.bloquery.ui.activity;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,16 +18,20 @@ import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.stevensadler.android.bloquery.R;
+import com.stevensadler.android.bloquery.api.model.Answer;
 import com.stevensadler.android.bloquery.api.model.ParseProxyObject;
 import com.stevensadler.android.bloquery.api.model.Question;
+import com.stevensadler.android.bloquery.ui.fragment.GenericMessageFragment;
 import com.stevensadler.android.bloquery.ui.fragment.QuestionListFragment;
 import com.stevensadler.android.bloquery.ui.fragment.SingleQuestionFragment;
 
 import java.util.List;
 
-public class BloqueryActivity extends AppCompatActivity implements QuestionListFragment.Delegate, SingleQuestionFragment.Delegate {
+public class BloqueryActivity extends AppCompatActivity implements QuestionListFragment.Delegate, SingleQuestionFragment.Delegate, GenericMessageFragment.Delegate {
 
     private static String TAG = BloqueryActivity.class.getSimpleName();
+
+    private String AIRPLANE_MODE_ON_MESSAGE = "Airplane mode is on. No questions are available. Please turn Airplane mode off and click this text to view questions.";
 
     private boolean hasAddedFirstFragment = false;
 
@@ -89,9 +94,11 @@ public class BloqueryActivity extends AppCompatActivity implements QuestionListF
         }
 
         if (isAirplaneModeOn(this)) {
-            Question question = new Question();
-            question.setBody("Airplane mode is on. No questions are available. Please turn Airplane mode off and click this text to view questions.");
-            addSingleQuestionFragment(question);
+//            Question question = new Question();
+//            question.setBody("Airplane mode is on. No questions are available. Please turn Airplane mode off and click this text to view questions.");
+//            addSingleQuestionFragment(question);
+
+            addGenericMessageFragment(AIRPLANE_MODE_ON_MESSAGE);
 
         } else {
             addQuestionListFragment();
@@ -138,13 +145,48 @@ public class BloqueryActivity extends AppCompatActivity implements QuestionListF
         addQuestionListFragment();
     }
 
+    public void onSubmitAnswerClicked(SingleQuestionFragment singleQuestionFragment, Answer answer) {
+        // TODO: go to question list view
+        Log.d(TAG, "onSubmitAnswerClicked " + answer.getBody());
+        addQuestionListFragment();
+    }
+
+    /*
+     * GenericMessageFragment.Delegate
+     */
+    public void onGenericMessageClicked(GenericMessageFragment genericMessageFragment, String genericMessage) {
+        // TODO: go to question list view
+        Log.d(TAG, "onGenericMessageClicked " + genericMessage);
+        if (!isAirplaneModeOn(this)) {
+            addQuestionListFragment();
+        }
+    }
+
     /*
      * Private methods
      */
 
+    private void addFragment(Fragment fragment) {
+        if (hasAddedFirstFragment) {
+            getFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fl_fragment_container, fragment, null)
+                    .addToBackStack(null)
+                    .commit();
+        } else {
+            hasAddedFirstFragment = true;
+            getFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.fl_fragment_container, fragment, null)
+                    .addToBackStack(null)
+                    .commit();
+        }
+    }
+
     private void addQuestionListFragment() {
         if (isAirplaneModeOn(this)) {
-            Toast.makeText(this, "Airplane mode is on. No questions are available.", Toast.LENGTH_LONG).show();
+            //Toast.makeText(this, "Airplane mode is on. No questions are available.", Toast.LENGTH_LONG).show();
+            addGenericMessageFragment(AIRPLANE_MODE_ON_MESSAGE);
             return;
         }
         ParseQuery<Question> query = ParseQuery.getQuery("Question");
@@ -161,30 +203,18 @@ public class BloqueryActivity extends AppCompatActivity implements QuestionListF
 
                     int count = 0;
                     for (Question question : questions) {
-                        Log.d(TAG, "onCreate  question[" + count + "] = " + question.getBody());
+                        //Log.d(TAG, "onCreate  question[" + count + "] = " + question.getObjectId() + " = " + question.getBody());
+                        question.setQuestionId(question.getObjectId());
 
                         ParseProxyObject parseProxyObject = new ParseProxyObject(question);
+                        //Log.d(TAG, "onCreate   ParseProxyObject has questionId = " + parseProxyObject.has("questionId"));
                         bundle.putSerializable("" + count, parseProxyObject);
                         count++;
                     }
                     bundle.putInt("size", count);
                     fragment.setArguments(bundle);
                     fragment.setDelegate(BloqueryActivity.this);
-
-                    if (hasAddedFirstFragment) {
-                        getFragmentManager()
-                                .beginTransaction()
-                                .replace(R.id.fl_fragment_container, fragment, null)
-                                .addToBackStack(null)
-                                .commit();
-                    } else {
-                        hasAddedFirstFragment = true;
-                        getFragmentManager()
-                                .beginTransaction()
-                                .add(R.id.fl_fragment_container, fragment, null)
-                                .addToBackStack(null)
-                                .commit();
-                    }
+                    addFragment(fragment);
                 } else {
                     Log.d(TAG, "addQuestionListFragment callback: Error: " + e.getMessage());
                 }
@@ -192,31 +222,69 @@ public class BloqueryActivity extends AppCompatActivity implements QuestionListF
         });
     }
 
-    private void addSingleQuestionFragment(Question question) {
+    private void addSingleQuestionFragment(final Question question) {
 
-        Log.d(TAG, "addSingleQuestionFragment " + question.getBody());
+        if (isAirplaneModeOn(this)) {
+            //Toast.makeText(this, "Airplane mode is on. No questions are available.", Toast.LENGTH_LONG).show();
+            addGenericMessageFragment(AIRPLANE_MODE_ON_MESSAGE);
+            return;
+        }
 
-        SingleQuestionFragment fragment = new SingleQuestionFragment();
+        Log.d(TAG, "addSingleQuestionFragment " + question.getQuestionId() + " = " + question.getBody());
+
+        /*
+         * Need to show the questions, an input text field for the answer, and a submit button
+         * The questionId will be added to the answer so that it can link to the question table
+         */
+
+//        TestAnswerCreator testAC = new TestAnswerCreator();
+//        testAC.addAnswer(question, "Test Answer 1");
+
+        ParseQuery<Answer> query = ParseQuery.getQuery("Answer");
+        query.whereEqualTo("questionId", question.getQuestionId());
+        query.orderByDescending("updatedAt");
+        query.setLimit(20);
+        query.findInBackground(new FindCallback<Answer>() {
+            @Override
+            public void done(List<Answer> answers, ParseException e) {
+                if (e == null) {
+                    Log.d(TAG, "addSingleQuestionFragment callback: Retrieved " + answers.size() + " answers");
+
+                    SingleQuestionFragment fragment = new SingleQuestionFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("questionId", question.getQuestionId());
+                    ParseProxyObject parseProxyQuestion = new ParseProxyObject(question);
+                    bundle.putSerializable("questionObject", parseProxyQuestion);
+
+                    int count = 0;
+                    for (Answer answer : answers) {
+                        Log.d(TAG, "addSingleQuestionFragment callback: answers[" + count + "]  questionId = " + answer.getQuestionId() + " answer.objectId = " + answer.getObjectId() + " = " + answer.getBody());
+                        ParseProxyObject parseProxyObject = new ParseProxyObject(answer);
+                        bundle.putSerializable(""+count, parseProxyObject);
+                        count++;
+                    }
+                    bundle.putInt("size", count);
+                    fragment.setArguments(bundle);
+                    fragment.setDelegate(BloqueryActivity.this);
+                    addFragment(fragment);
+                } else {
+                    Log.d(TAG, "addSingleQuestionFragment callback: Error: " + e.getMessage());
+                }
+            }
+        });
+
+    }
+
+    private void addGenericMessageFragment(String message) {
+
+        Log.d(TAG, "addGenericMessageFragment " + message);
+
+        GenericMessageFragment fragment = new GenericMessageFragment();
         Bundle bundle = new Bundle();
-        ParseProxyObject parseProxyObject = new ParseProxyObject(question);
-        bundle.putSerializable("questionObject", parseProxyObject);
+        bundle.putString("message", message);
         fragment.setArguments(bundle);
         fragment.setDelegate(BloqueryActivity.this);
-
-        if (hasAddedFirstFragment) {
-            getFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fl_fragment_container, fragment, null)
-                    .addToBackStack(null)
-                    .commit();
-        } else {
-            hasAddedFirstFragment = true;
-            getFragmentManager()
-                    .beginTransaction()
-                    .add(R.id.fl_fragment_container, fragment, null)
-                    .addToBackStack(null)
-                    .commit();
-        }
+        addFragment(fragment);
     }
 
     @SuppressWarnings("deprecation")

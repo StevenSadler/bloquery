@@ -1,5 +1,7 @@
 package com.stevensadler.android.bloquery.api.model;
 
+import android.util.Log;
+
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 
@@ -26,6 +28,7 @@ public class ParseProxyObject implements Serializable {
 
         // Loop the keys in the ParseObject
         for(String key : object.keySet()) {
+            Log.d("ParseProxyObject", "key " + key);
             @SuppressWarnings("rawtypes")
             Class classType = object.get(key).getClass();
             if(classType == byte[].class || classType == String.class ||

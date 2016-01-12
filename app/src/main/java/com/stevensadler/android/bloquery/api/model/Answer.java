@@ -4,10 +4,10 @@ import com.parse.ParseClassName;
 import com.parse.ParseObject;
 
 /**
- * Created by Steven on 1/3/2016.
+ * Created by Steven on 1/10/2016.
  */
-@ParseClassName("Question")
-public class Question extends ParseObject {
+@ParseClassName("Answer")
+public class Answer extends ParseObject {
 
     public String getQuestionId() {
         return getString("questionId");

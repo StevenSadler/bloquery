@@ -6,6 +6,7 @@ import com.parse.Parse;
 import com.parse.ParseACL;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
+import com.stevensadler.android.bloquery.api.model.Answer;
 import com.stevensadler.android.bloquery.api.model.Question;
 
 /**
@@ -29,6 +30,7 @@ public class BloqueryApplication extends Application {
         Parse.enableLocalDatastore(this);
 
         ParseObject.registerSubclass(Question.class);
+        ParseObject.registerSubclass(Answer.class);
         Parse.initialize(this);
 
         ParseUser.enableAutomaticUser();
