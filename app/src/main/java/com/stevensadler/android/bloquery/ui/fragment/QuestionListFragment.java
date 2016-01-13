@@ -49,9 +49,11 @@ public class QuestionListFragment extends Fragment implements QuestionAdapter.De
             ParseProxyObject parseProxyObject = (ParseProxyObject) getArguments().getSerializable("" + index);
             Question question = new Question();
             question.setBody(parseProxyObject.getString("body"));
+            question.setQuestionId(parseProxyObject.getString("questionId"));
+            //question.setObjectId(parseProxyObject.getString("objectId"));
             mQuestions.add(question);
 
-            Log.d(TAG, "onCreate  index = " + index + " question.getBody = " + question.getBody());
+            Log.d(TAG, "onCreate  index = " + index + " " + parseProxyObject.getString("questionId") + " " + question.getBody());
         }
         mQuestionAdapter = new QuestionAdapter(mQuestions);
         mQuestionAdapter.setDelegate(this);

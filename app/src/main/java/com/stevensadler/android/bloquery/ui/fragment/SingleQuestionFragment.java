@@ -6,9 +6,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.stevensadler.android.bloquery.R;
+import com.stevensadler.android.bloquery.api.model.Answer;
 import com.stevensadler.android.bloquery.api.model.ParseProxyObject;
 import com.stevensadler.android.bloquery.api.model.Question;
 
@@ -23,13 +26,16 @@ public class SingleQuestionFragment extends Fragment implements View.OnClickList
 
     public static interface Delegate {
         public void onQuestionClicked(SingleQuestionFragment singleQuestionFragment, Question question);
+        public void onSubmitAnswerClicked(SingleQuestionFragment singleQuestionFragment, Answer answer);
     }
 
     private static String TAG = SingleQuestionFragment.class.getSimpleName();
 
-    private TextView mTextView;
+
     private Question mQuestion;
-    //private QuestionAdapter mQuestionAdapter;
+    private TextView mTextView;
+    private EditText mEditText;
+    private Button mSubmitButton;
 
     private WeakReference<Delegate> delegate;
 
@@ -44,9 +50,7 @@ public class SingleQuestionFragment extends Fragment implements View.OnClickList
         ParseProxyObject parseProxyObject = (ParseProxyObject) getArguments().getSerializable("questionObject");
         mQuestion = new Question();
         mQuestion.setBody(parseProxyObject.getString("body"));
-
-        //mQuestionAdapter = new QuestionAdapter(questions);
-       // mQuestionAdapter.setDelegate(this);
+        mQuestion.setQuestionId(parseProxyObject.getString("questionId"));
     }
 
     @Override
@@ -54,8 +58,13 @@ public class SingleQuestionFragment extends Fragment implements View.OnClickList
         Log.d(TAG, "onCreateView");
         View view = layoutInflater.inflate(R.layout.fragment_single_question, viewGroup, false);
         mTextView = (TextView) view.findViewById(R.id.tv_fragment_single_question);
+        mEditText = (EditText) view.findViewById(R.id.et_fragment_single_question_answer);
+        mSubmitButton = (Button) view.findViewById(R.id.b_fragment_single_question_submit_answer);
+
         mTextView.setText(mQuestion.getBody());
         mTextView.setOnClickListener(this);
+        mEditText.setText("");
+        mSubmitButton.setOnClickListener(this);
         return view;
     }
 
@@ -65,21 +74,25 @@ public class SingleQuestionFragment extends Fragment implements View.OnClickList
     @Override
     public void onClick(View view) {
         Log.d(TAG, "onClick");
-        if (getDelegate() != null) {
-            getDelegate().onQuestionClicked(SingleQuestionFragment.this, mQuestion);
+        if (view == mTextView) {
+            if (getDelegate() != null) {
+                getDelegate().onQuestionClicked(SingleQuestionFragment.this, mQuestion);
+            }
+        } else if (view == mSubmitButton) {
+
+            if (getDelegate() != null) {
+                Answer answer = new Answer();
+                answer.setQuestionId(mQuestion.getQuestionId());
+                answer.setBody(mEditText.getText().toString());
+                answer.saveInBackground();
+                getDelegate().onSubmitAnswerClicked(SingleQuestionFragment.this, answer);
+            }
         }
     }
 
-//    /*
-//     * QuestionAdapter.Delegate
-//     */
-//    @Override
-//    public void onQuestionClicked(QuestionAdapter questionAdapter, Question question) {
-//        Log.d(TAG, "onQuestionClicked: " + question.getBody());
-//        if (getDelegate() != null) {
-//            getDelegate().onQuestionClicked(SingleQuestionFragment.this, question);
-//        }
-//    }
+    /*
+     *
+     */
 
     public Delegate getDelegate() {
         if (delegate == null) {
