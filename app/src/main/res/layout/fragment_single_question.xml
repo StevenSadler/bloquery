@@ -46,6 +46,12 @@
             android:layout_marginRight="24dp"
             android:layout_marginLeft="24dp" />
 
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_fragment_single_question_answer_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/b_fragment_single_question_submit_answer"/>
+
     </RelativeLayout>
 
 
