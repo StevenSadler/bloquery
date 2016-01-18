@@ -12,22 +12,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.parse.FindCallback;
 import com.parse.ParseAnonymousUtils;
-import com.parse.ParseException;
-import com.parse.ParseQuery;
+import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.stevensadler.android.bloquery.R;
-import com.stevensadler.android.bloquery.api.model.Answer;
-import com.stevensadler.android.bloquery.api.model.ParseProxyObject;
-import com.stevensadler.android.bloquery.api.model.Question;
+import com.stevensadler.android.bloquery.ui.BloqueryApplication;
 import com.stevensadler.android.bloquery.ui.fragment.GenericMessageFragment;
 import com.stevensadler.android.bloquery.ui.fragment.QuestionListFragment;
 import com.stevensadler.android.bloquery.ui.fragment.SingleQuestionFragment;
 
-import java.util.List;
-
-public class BloqueryActivity extends AppCompatActivity implements QuestionListFragment.Delegate, SingleQuestionFragment.Delegate, GenericMessageFragment.Delegate {
+public class BloqueryActivity extends AppCompatActivity implements
+        QuestionListFragment.Delegate,
+        SingleQuestionFragment.Delegate,
+        GenericMessageFragment.Delegate {
 
     private static String TAG = BloqueryActivity.class.getSimpleName();
 
@@ -42,6 +39,11 @@ public class BloqueryActivity extends AppCompatActivity implements QuestionListF
         setSupportActionBar(toolbar);
 
 //        TestQuestionCreator testQC = new TestQuestionCreator();
+//        testQC.addQuestion("Public write access to untracked author question created by " + ParseUser.getCurrentUser().getUsername());
+//        testQC.addQuestion("An untracked author question created by " + ParseUser.getCurrentUser().getUsername());
+//        testQC.addQuestion("A question created by " + ParseUser.getCurrentUser().getUsername());
+//        testQC.addQuestion("Test question from" + ParseUser.getCurrentUser().getUsername());
+
 //        testQC.addQuestion("What would you do if you were the one survivor in a plane crash");
 //        testQC.addQuestion("If you woke up and had 2,000 unread emails and could only answer 300 of them how would you choose which ones to answer?");
 //        testQC.addQuestion("Who would win a fight between Spiderman and Batman");
@@ -83,6 +85,9 @@ public class BloqueryActivity extends AppCompatActivity implements QuestionListF
 //                startActivity(intent);
 //                finish();
 
+//                TestQuestionCreator testQC = new TestQuestionCreator();
+//                testQC.addQuestion("How do you add an empty array of answers to a question?");
+
                 Toast.makeText(this, "Welcome " + currentUser.getUsername(), Toast.LENGTH_LONG).show();
             } else {
                 // send user to LoginSignupActivity.class
@@ -94,10 +99,6 @@ public class BloqueryActivity extends AppCompatActivity implements QuestionListF
         }
 
         if (isAirplaneModeOn(this)) {
-//            Question question = new Question();
-//            question.setBody("Airplane mode is on. No questions are available. Please turn Airplane mode off and click this text to view questions.");
-//            addSingleQuestionFragment(question);
-
             addGenericMessageFragment(AIRPLANE_MODE_ON_MESSAGE);
 
         } else {
@@ -130,25 +131,52 @@ public class BloqueryActivity extends AppCompatActivity implements QuestionListF
     /*
      * QuestionListFragment.Delegate
      */
-    public void onQuestionClicked(QuestionListFragment questionListFragment, Question question) {
+    public void onQuestionClicked(QuestionListFragment questionListFragment, ParseObject question) {
         // TODO: go to single question view
-        Log.d(TAG, "onQuestionListClicked " + question.getBody());
+        Log.d(TAG, "onQuestionListClicked " + question.getString("body"));
+        BloqueryApplication.getSharedDataSource().setSelectedQuestion(question);
         addSingleQuestionFragment(question);
     }
 
     /*
      * SingleQuestionFragment.Delegate
      */
-    public void onQuestionClicked(SingleQuestionFragment singleQuestionFragment, Question question) {
+    public void onQuestionClicked(SingleQuestionFragment singleQuestionFragment, ParseObject question) {
         // TODO: go to question list view
-        Log.d(TAG, "onSingleQuestionClicked " + question.getBody());
+        Log.d(TAG, "onSingleQuestionClicked " + question.getString("body"));
+        BloqueryApplication.getSharedDataSource().setSelectedQuestion(null);
         addQuestionListFragment();
     }
 
-    public void onSubmitAnswerClicked(SingleQuestionFragment singleQuestionFragment, Answer answer) {
+    public void onSubmitAnswerClicked(SingleQuestionFragment singleQuestionFragment, ParseObject question, String answerBody) {
         // TODO: go to question list view
-        Log.d(TAG, "onSubmitAnswerClicked " + answer.getBody());
-        addQuestionListFragment();
+        Log.d(TAG, "onSubmitAnswerClicked " + answerBody);
+
+        ParseObject answer = ParseObject.create("Answer");
+        answer.put("user", ParseUser.getCurrentUser());
+        answer.put("body", answerBody);
+        answer.saveInBackground();
+
+        question.add("answerList", answer);
+        question.saveInBackground();
+
+        //BloqueryApplication.getSharedNetworkManager().pullQuestions();
+        //addQuestionListFragment();
+    }
+
+    /*
+     * public android:onClick function in menu_bloquery.xml
+     */
+    public void onMenuLogoutClick(MenuItem menuItem) {
+        Log.d(TAG, "onMenuLogoutClick");
+
+        ParseUser.logOut();
+
+        // send user to LoginSignupActivity.class
+        Intent intent = new Intent(BloqueryActivity.this,
+                LoginSignupActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     /*
@@ -189,90 +217,26 @@ public class BloqueryActivity extends AppCompatActivity implements QuestionListF
             addGenericMessageFragment(AIRPLANE_MODE_ON_MESSAGE);
             return;
         }
-        ParseQuery<Question> query = ParseQuery.getQuery("Question");
-        query.orderByAscending("body");
-        query.setLimit(20);
-        query.findInBackground(new FindCallback<Question>() {
-            @Override
-            public void done(List<Question> questions, ParseException e) {
-                if (e == null) {
-                    Log.d(TAG, "addQuestionListFragment callback: Retrieved " + questions.size() + " questions");
 
-                    QuestionListFragment fragment = new QuestionListFragment();
-                    Bundle bundle = new Bundle();
-
-                    int count = 0;
-                    for (Question question : questions) {
-                        //Log.d(TAG, "onCreate  question[" + count + "] = " + question.getObjectId() + " = " + question.getBody());
-                        question.setQuestionId(question.getObjectId());
-
-                        ParseProxyObject parseProxyObject = new ParseProxyObject(question);
-                        //Log.d(TAG, "onCreate   ParseProxyObject has questionId = " + parseProxyObject.has("questionId"));
-                        bundle.putSerializable("" + count, parseProxyObject);
-                        count++;
-                    }
-                    bundle.putInt("size", count);
-                    fragment.setArguments(bundle);
-                    fragment.setDelegate(BloqueryActivity.this);
-                    addFragment(fragment);
-                } else {
-                    Log.d(TAG, "addQuestionListFragment callback: Error: " + e.getMessage());
-                }
-            }
-        });
+        QuestionListFragment fragment = new QuestionListFragment();
+        fragment.setDelegate(this);
+        BloqueryApplication.getSharedDataSource().addObserver(fragment);
+        addFragment(fragment);
     }
 
-    private void addSingleQuestionFragment(final Question question) {
-
+    private void addSingleQuestionFragment(final ParseObject question) {
         if (isAirplaneModeOn(this)) {
             //Toast.makeText(this, "Airplane mode is on. No questions are available.", Toast.LENGTH_LONG).show();
             addGenericMessageFragment(AIRPLANE_MODE_ON_MESSAGE);
             return;
         }
 
-        Log.d(TAG, "addSingleQuestionFragment " + question.getQuestionId() + " = " + question.getBody());
+        Log.d(TAG, "addSingleQuestionFragment " + question.getString("body"));
 
-        /*
-         * Need to show the questions, an input text field for the answer, and a submit button
-         * The questionId will be added to the answer so that it can link to the question table
-         */
-
-//        TestAnswerCreator testAC = new TestAnswerCreator();
-//        testAC.addAnswer(question, "Test Answer 1");
-
-        ParseQuery<Answer> query = ParseQuery.getQuery("Answer");
-        query.whereEqualTo("questionId", question.getQuestionId());
-        query.orderByDescending("updatedAt");
-        query.setLimit(20);
-        query.findInBackground(new FindCallback<Answer>() {
-            @Override
-            public void done(List<Answer> answers, ParseException e) {
-                if (e == null) {
-                    Log.d(TAG, "addSingleQuestionFragment callback: Retrieved " + answers.size() + " answers");
-
-                    SingleQuestionFragment fragment = new SingleQuestionFragment();
-                    Bundle bundle = new Bundle();
-                    bundle.putString("questionId", question.getQuestionId());
-                    ParseProxyObject parseProxyQuestion = new ParseProxyObject(question);
-                    bundle.putSerializable("questionObject", parseProxyQuestion);
-
-                    int count = 0;
-                    for (Answer answer : answers) {
-                        Log.d(TAG, "addSingleQuestionFragment callback: answers[" + count + "]  questionId = " + answer.getQuestionId() + " answer.objectId = " + answer.getObjectId() + " = " + answer.getBody());
-                        ParseProxyObject parseProxyObject = new ParseProxyObject(answer);
-                        bundle.putSerializable(""+count, parseProxyObject);
-                        count++;
-                    }
-                    bundle.putInt("size", count);
-                    fragment.setArguments(bundle);
-                    fragment.setDelegate(BloqueryActivity.this);
-                    addFragment(fragment);
-                } else {
-                    Log.d(TAG, "addSingleQuestionFragment callback: Error: " + e.getMessage());
-                }
-            }
-        });
-
+        SingleQuestionFragment fragment = new SingleQuestionFragment();
+        fragment.setDelegate(this);
+        BloqueryApplication.getSharedDataSource().addObserver(fragment);
+        addFragment(fragment);
     }
 
     private void addGenericMessageFragment(String message) {

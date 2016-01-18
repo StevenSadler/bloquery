@@ -7,8 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.parse.ParseObject;
 import com.stevensadler.android.bloquery.R;
-import com.stevensadler.android.bloquery.api.model.Answer;
 
 import java.util.List;
 
@@ -19,9 +19,9 @@ public class AnswerAdapter extends RecyclerView.Adapter<AnswerAdapter.AnswerHold
 
     private String TAG = AnswerAdapter.class.getSimpleName();
 
-    private List<Answer> answers;
+    private List<ParseObject> answers;
 
-    public AnswerAdapter(List<Answer> answers) {
+    public AnswerAdapter(List<ParseObject> answers) {
         this.answers = answers;
     }
 
@@ -34,7 +34,8 @@ public class AnswerAdapter extends RecyclerView.Adapter<AnswerAdapter.AnswerHold
 
     @Override
     public void onBindViewHolder(AnswerHolder holder, int position) {
-        holder.update(answers.get(position));
+        int reversedOrderIndex = getItemCount() - 1 - position;
+        holder.update(answers.get(reversedOrderIndex));
     }
 
     @Override
@@ -50,7 +51,7 @@ public class AnswerAdapter extends RecyclerView.Adapter<AnswerAdapter.AnswerHold
 
         public TextView answerTextView;
 
-        private Answer answer;
+        private ParseObject answer;
 
         public AnswerHolder(View itemView) {
             super(itemView);
@@ -58,11 +59,11 @@ public class AnswerAdapter extends RecyclerView.Adapter<AnswerAdapter.AnswerHold
             //answerTextView.setOnClickListener(this);
         }
 
-        void update(Answer answer) {
+        void update(ParseObject answer) {
             Log.d(TAG, "update");
             this.answer = answer;
 
-            String text = answer.getBody();
+            String text = answer.getString("body");
             answerTextView.setText(text);
         }
 

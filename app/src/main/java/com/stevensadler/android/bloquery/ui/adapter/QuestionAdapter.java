@@ -7,8 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.parse.ParseObject;
 import com.stevensadler.android.bloquery.R;
-import com.stevensadler.android.bloquery.api.model.Question;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -19,16 +19,16 @@ import java.util.List;
 public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.QuestionHolder> {
 
     public static interface Delegate {
-        public void onQuestionClicked(QuestionAdapter questionAdapter, Question question);
+        public void onQuestionClicked(QuestionAdapter questionAdapter, ParseObject question);
     }
 
     private String TAG = QuestionAdapter.class.getSimpleName();
 
-    private List<Question> questions;
+    private List<ParseObject> mQuestions;
     private WeakReference<Delegate> delegate;
 
-    public QuestionAdapter(List<Question> questions) {
-        this.questions = questions;
+    public QuestionAdapter(List<ParseObject> questions) {
+        mQuestions = questions;
     }
 
     @Override
@@ -41,15 +41,12 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
 
     @Override
     public void onBindViewHolder(QuestionHolder holder, int position) {
-        holder.update(questions.get(position));
-
-        Log.d(TAG, "onBindViewHolder " + position);
-        Log.d(TAG, "breakpoint");
+        holder.update(mQuestions.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return questions.size();
+        return mQuestions.size();
     }
 
     public Delegate getDelegate() {
@@ -74,7 +71,7 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
 
         public TextView questionTextView;
 
-        private Question question;
+        private ParseObject mQuestion;
 
         public QuestionHolder(View itemView) {
             super(itemView);
@@ -82,11 +79,9 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
             questionTextView.setOnClickListener(this);
         }
 
-        void update(Question question) {
-            Log.d(TAG, "update");
-            this.question = question;
-
-            String text = question.getBody();
+        void update(ParseObject question) {
+            mQuestion = question;
+            String text = question.getString("body");
             questionTextView.setText(text);
         }
 
@@ -94,7 +89,7 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
         public void onClick(View view) {
             Log.d(TAG, "onClick");
             if (getDelegate() != null) {
-                getDelegate().onQuestionClicked(QuestionAdapter.this, question);
+                getDelegate().onQuestionClicked(QuestionAdapter.this, mQuestion);
             }
         }
     }

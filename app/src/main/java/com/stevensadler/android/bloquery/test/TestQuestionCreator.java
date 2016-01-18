@@ -1,6 +1,8 @@
 package com.stevensadler.android.bloquery.test;
 
-import com.stevensadler.android.bloquery.api.model.Question;
+import com.parse.ParseObject;
+
+import java.util.ArrayList;
 
 /**
  * Created by Steven on 1/3/2016.
@@ -10,8 +12,11 @@ public class TestQuestionCreator {
     public TestQuestionCreator() {}
 
     public void addQuestion(String body) {
-        Question testQuestion = new Question();
-        testQuestion.setBody(body);
-        testQuestion.saveInBackground();
+        ParseObject question = ParseObject.create("Question");
+        question.put("body", body);
+        //question.put("createdBy", ParseUser.getCurrentUser());
+        //question.put("user", ParseUser.getCurrentUser());
+        question.put("answerList", new ArrayList<ParseObject>());
+        question.saveInBackground();
     }
 }

@@ -52,7 +52,7 @@ public class LoginSignupActivity extends AppCompatActivity {
                                     // if user exists and is authenticated, send user to Welcome.class
                                     Intent intent = new Intent(
                                             LoginSignupActivity.this,
-                                            Welcome.class);
+                                            BloqueryActivity.class);
                                     startActivity(intent);
                                     Toast.makeText(getApplicationContext(),
                                             "Successfully Logged in",

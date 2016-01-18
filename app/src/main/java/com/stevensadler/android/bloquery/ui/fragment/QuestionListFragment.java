@@ -9,28 +9,31 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.parse.ParseObject;
 import com.stevensadler.android.bloquery.R;
-import com.stevensadler.android.bloquery.api.model.ParseProxyObject;
-import com.stevensadler.android.bloquery.api.model.Question;
+import com.stevensadler.android.bloquery.ui.BloqueryApplication;
 import com.stevensadler.android.bloquery.ui.adapter.QuestionAdapter;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 /**
  * Created by Steven on 1/7/2016.
  */
-public class QuestionListFragment extends Fragment implements QuestionAdapter.Delegate {
+public class QuestionListFragment extends Fragment implements
+        Observer,
+        QuestionAdapter.Delegate {
 
     public static interface Delegate {
-        public void onQuestionClicked(QuestionListFragment questionListFragment, Question question);
+        public void onQuestionClicked(QuestionListFragment questionListFragment, ParseObject question);
     }
 
     //private static final String BUNDLE_QUESTIONS = QuestionListFragment.class.getCanonicalName().concat(".BUNDLE_QUESTIONS");
     private static String TAG = QuestionListFragment.class.getSimpleName();
 
-    private static List<Question> mQuestions;
+    private static List<ParseObject> mQuestions;
 
     private RecyclerView mRecyclerView;
     private QuestionAdapter mQuestionAdapter;
@@ -42,19 +45,21 @@ public class QuestionListFragment extends Fragment implements QuestionAdapter.De
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mQuestions = new ArrayList<Question>();
+        mQuestions = BloqueryApplication.getSharedDataSource().getQuestions();
 
-        int size = getArguments().getInt("size");
-        for (int index = 0; index < size; index++) {
-            ParseProxyObject parseProxyObject = (ParseProxyObject) getArguments().getSerializable("" + index);
-            Question question = new Question();
-            question.setBody(parseProxyObject.getString("body"));
-            question.setQuestionId(parseProxyObject.getString("questionId"));
-            //question.setObjectId(parseProxyObject.getString("objectId"));
-            mQuestions.add(question);
+//        mQuestions = new ArrayList<ParseObject>();
 
-            Log.d(TAG, "onCreate  index = " + index + " " + parseProxyObject.getString("questionId") + " " + question.getBody());
-        }
+//        int size = getArguments().getInt("size");
+//        for (int index = 0; index < size; index++) {
+//            ParseProxyObject parseProxyObject = (ParseProxyObject) getArguments().getSerializable("" + index);
+//            Question question = new Question();
+//            question.setBody(parseProxyObject.getString("body"));
+//            question.setQuestionId(parseProxyObject.getString("questionId"));
+//            //question.setObjectId(parseProxyObject.getString("objectId"));
+//            mQuestions.add(question);
+//
+//            Log.d(TAG, "onCreate  index = " + index + " " + parseProxyObject.getString("questionId") + " " + question.getBody());
+//        }
         mQuestionAdapter = new QuestionAdapter(mQuestions);
         mQuestionAdapter.setDelegate(this);
     }
@@ -76,8 +81,8 @@ public class QuestionListFragment extends Fragment implements QuestionAdapter.De
      * QuestionAdapter.Delegate
      */
     @Override
-    public void onQuestionClicked(QuestionAdapter questionAdapter, Question question) {
-        Log.d(TAG, "onQuestionClicked: " + question.getBody());
+    public void onQuestionClicked(QuestionAdapter questionAdapter, ParseObject question) {
+        Log.d(TAG, "onQuestionClicked: " + question.getString("body"));
         if (getDelegate() != null) {
             getDelegate().onQuestionClicked(QuestionListFragment.this, question);
         }
@@ -94,5 +99,20 @@ public class QuestionListFragment extends Fragment implements QuestionAdapter.De
         this.delegate = new WeakReference<Delegate>(delegate);
     }
 
+    /*
+     * Observer
+     */
+    @Override
+    public void update(Observable observable, Object data) {
+        Log.d(TAG, "update");
 
+        List<ParseObject> questions = BloqueryApplication.getSharedDataSource().getQuestions();
+        for (ParseObject question : questions) {
+            Log.d(TAG, question.getString("body"));
+        }
+        mQuestions = questions;
+        mQuestionAdapter = new QuestionAdapter(mQuestions);
+        mQuestionAdapter.setDelegate(this);
+        mRecyclerView.setAdapter(mQuestionAdapter);
+    }
 }

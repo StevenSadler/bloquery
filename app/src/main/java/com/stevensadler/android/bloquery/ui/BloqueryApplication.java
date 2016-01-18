@@ -4,10 +4,9 @@ import android.app.Application;
 
 import com.parse.Parse;
 import com.parse.ParseACL;
-import com.parse.ParseObject;
 import com.parse.ParseUser;
-import com.stevensadler.android.bloquery.api.model.Answer;
-import com.stevensadler.android.bloquery.api.model.Question;
+import com.stevensadler.android.bloquery.api.model.DataSource;
+import com.stevensadler.android.bloquery.network.NetworkManager;
 
 /**
  * Created by Steven on 12/29/2015.
@@ -18,7 +17,17 @@ public class BloqueryApplication extends Application {
         return sharedInstance;
     }
 
+    public static DataSource getSharedDataSource() {
+        return BloqueryApplication.getSharedInstance().getDataSource();
+    }
+
+    public static NetworkManager getSharedNetworkManager() {
+        return BloqueryApplication.getSharedInstance().getNetworkManager();
+    }
+
     private static BloqueryApplication sharedInstance;
+    private NetworkManager mNetworkManager;
+    private DataSource mDataSource;
 
     @Override
     public void onCreate() {
@@ -27,10 +36,10 @@ public class BloqueryApplication extends Application {
 
         // [Optional] Power your app with Local Datastore. For more info, go to
         // https://parse.com/docs/android/guide#local-datastore
-        Parse.enableLocalDatastore(this);
+        //Parse.enableLocalDatastore(this);
 
-        ParseObject.registerSubclass(Question.class);
-        ParseObject.registerSubclass(Answer.class);
+        //ParseObject.registerSubclass(Question.class);
+        //ParseObject.registerSubclass(Answer.class);
         Parse.initialize(this);
 
         ParseUser.enableAutomaticUser();
@@ -38,7 +47,22 @@ public class BloqueryApplication extends Application {
 
         // if you would like all objects to be private by default, remove this line
         defaultACL.setPublicReadAccess(true);
+        defaultACL.setPublicWriteAccess(true);
 
         ParseACL.setDefaultACL(defaultACL, true);
+
+
+        mDataSource = new DataSource();
+        mNetworkManager = new NetworkManager();
+        mNetworkManager.setDelegate(mDataSource);
+        mNetworkManager.pullQuestions();
+    }
+
+    private DataSource getDataSource() {
+        return mDataSource;
+    }
+
+    private NetworkManager getNetworkManager() {
+        return mNetworkManager;
     }
 }
