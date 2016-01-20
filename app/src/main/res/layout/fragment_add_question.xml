@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_fragment_add_question"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center">
+
+    <View
+        android:id="@+id/v_nav_item_top_padding"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dialog_default_padding"/>
+
+    <TextView
+        android:id="@+id/tv_label"
+        android:text="@string/action_add_question"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal" />
+
+    <EditText
+        android:id="@+id/et_input_question"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/what_time_is_sunset"
+        android:inputType="text"
+        android:imeOptions="actionDone"
+        android:gravity="center_horizontal" />
+
+    <Button
+        android:id="@+id/b_add_question_clear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/clear_button" />
+
+    <!--
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/b_add_question_clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/clear_button"/>
+
+        <Button
+            android:id="@+id/b_add_question_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel_button"/>
+
+
+    </LinearLayout>
+    -->
+
+
+
+</LinearLayout>

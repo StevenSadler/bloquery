@@ -9,4 +9,14 @@
     <string name="signup_button">Sign Up</string>
     <string name="logout_button">Log Out</string>
     <string name="welcome">Welcome!</string>
+
+    <string name="action_refresh_data">Refresh</string>
+
+    <string name="action_add_question">Add a Question</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="accept_button">OK</string>
+    <string name="clear_button">Clear</string>
+
+    <!-- localized strings -->
+    <string name="what_time_is_sunset">What time is sunset?</string>
 </resources>

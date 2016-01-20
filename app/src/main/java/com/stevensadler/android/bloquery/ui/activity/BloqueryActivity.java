@@ -17,11 +17,13 @@ import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.stevensadler.android.bloquery.R;
 import com.stevensadler.android.bloquery.ui.BloqueryApplication;
+import com.stevensadler.android.bloquery.ui.fragment.AddQuestionDialogFragment;
 import com.stevensadler.android.bloquery.ui.fragment.GenericMessageFragment;
 import com.stevensadler.android.bloquery.ui.fragment.QuestionListFragment;
 import com.stevensadler.android.bloquery.ui.fragment.SingleQuestionFragment;
 
 public class BloqueryActivity extends AppCompatActivity implements
+        AddQuestionDialogFragment.AddQuestionDialogListener,
         QuestionListFragment.Delegate,
         SingleQuestionFragment.Delegate,
         GenericMessageFragment.Delegate {
@@ -152,20 +154,31 @@ public class BloqueryActivity extends AppCompatActivity implements
         // TODO: go to question list view
         Log.d(TAG, "onSubmitAnswerClicked " + answerBody);
 
-        ParseObject answer = ParseObject.create("Answer");
-        answer.put("user", ParseUser.getCurrentUser());
-        answer.put("body", answerBody);
-        answer.saveInBackground();
-
-        question.add("answerList", answer);
-        question.saveInBackground();
-
-        //BloqueryApplication.getSharedNetworkManager().pullQuestions();
-        //addQuestionListFragment();
+        BloqueryApplication.getSharedNetworkManager().addAnswer(question, answerBody);
+        addQuestionListFragment();
     }
 
     /*
-     * public android:onClick function in menu_bloquery.xml
+     * GenericMessageFragment.Delegate
+     */
+    public void onGenericMessageClicked(GenericMessageFragment genericMessageFragment, String genericMessage) {
+        // TODO: go to question list view
+        Log.d(TAG, "onGenericMessageClicked " + genericMessage);
+        if (!isAirplaneModeOn(this)) {
+            addQuestionListFragment();
+        }
+    }
+
+    /*
+     * AddQuestionDialogFragment.AddQuestionDialogListener
+     */
+    @Override
+    public void onFinishAddQuestionDialog(String questionBody) {
+        BloqueryApplication.getSharedNetworkManager().addQuestion(questionBody);
+    }
+
+    /*
+     * public android:onClick functions in menu_bloquery.xml
      */
     public void onMenuLogoutClick(MenuItem menuItem) {
         Log.d(TAG, "onMenuLogoutClick");
@@ -179,15 +192,16 @@ public class BloqueryActivity extends AppCompatActivity implements
         finish();
     }
 
-    /*
-     * GenericMessageFragment.Delegate
-     */
-    public void onGenericMessageClicked(GenericMessageFragment genericMessageFragment, String genericMessage) {
-        // TODO: go to question list view
-        Log.d(TAG, "onGenericMessageClicked " + genericMessage);
-        if (!isAirplaneModeOn(this)) {
-            addQuestionListFragment();
-        }
+    public void onMenuRefreshDataClick(MenuItem menuItem) {
+        Log.d(TAG, "onMenuRefreshDataClick");
+        BloqueryApplication.getSharedNetworkManager().pullQuestions();
+    }
+
+    public void onMenuAddQuestionClick(MenuItem menuItem) {
+        Log.d(TAG, "onMenuAddQuestionClick");
+
+        AddQuestionDialogFragment dialogFragment = new AddQuestionDialogFragment();
+        dialogFragment.show(getSupportFragmentManager(), "Add Question Dialog Fragment");
     }
 
     /*

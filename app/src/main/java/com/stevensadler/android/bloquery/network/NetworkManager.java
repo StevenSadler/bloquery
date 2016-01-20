@@ -6,8 +6,10 @@ import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,10 +41,51 @@ public class NetworkManager {
                         getDelegate().onPullQuestions(objects);
                     }
                 } else {
-                    Log.d(TAG, "test parse query: Error: " + e.getMessage());
+                    Log.d(TAG, "parse query: Error: " + e.getMessage());
                 }
             }
         });
+    }
+
+    public void addQuestion(String body) {
+        if (body == null || body == "") {
+            return;
+        }
+        ParseObject question = ParseObject.create("Question");
+        question.put("body", body);
+        question.put("createdBy", ParseUser.getCurrentUser());
+        question.put("answerList", new ArrayList<ParseObject>());
+        question.saveInBackground();
+
+        // when i want to notify a delegate that I have completed a data change on parse
+        // and the delegate or something else might want to refresh by pulling data again
+        // then i need to tell that delegate it needs to do something
+
+//        question.saveInBackground(new SaveCallback() {
+//            @Override
+//            public void done(ParseException e) {
+//                if (e == null) {
+//                    if (getDelegate() != null) {
+//                        getDelegate().onAddQuestion();
+//                    }
+//                } else {
+//                    Log.d(TAG, "parse query: Error: " + e.getMessage());
+//                }
+//            }
+//        });
+    }
+
+    public void addAnswer(ParseObject question, String body) {
+        if (question == null || body == null || body == "") {
+            return;
+        }
+        ParseObject answer = ParseObject.create("Answer");
+        answer.put("body", body);
+        answer.put("createdBy", ParseUser.getCurrentUser());
+        answer.saveInBackground();
+
+        question.add("answerList", answer);
+        question.saveInBackground();
     }
 
     /*
