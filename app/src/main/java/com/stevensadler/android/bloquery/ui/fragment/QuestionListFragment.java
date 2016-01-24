@@ -23,14 +23,14 @@ import java.util.Observer;
  * Created by Steven on 1/7/2016.
  */
 public class QuestionListFragment extends Fragment implements
+        IDelegatingFragment,
         Observer,
         QuestionAdapter.Delegate {
 
-    public static interface Delegate {
-        public void onQuestionClicked(QuestionListFragment questionListFragment, ParseObject question);
+    public static interface Delegate extends IFragmentDelegate {
+        public void onQuestionListClicked(ParseObject question);
     }
 
-    //private static final String BUNDLE_QUESTIONS = QuestionListFragment.class.getCanonicalName().concat(".BUNDLE_QUESTIONS");
     private static String TAG = QuestionListFragment.class.getSimpleName();
 
     private static List<ParseObject> mQuestions;
@@ -47,19 +47,6 @@ public class QuestionListFragment extends Fragment implements
 
         mQuestions = BloqueryApplication.getSharedDataSource().getQuestions();
 
-//        mQuestions = new ArrayList<ParseObject>();
-
-//        int size = getArguments().getInt("size");
-//        for (int index = 0; index < size; index++) {
-//            ParseProxyObject parseProxyObject = (ParseProxyObject) getArguments().getSerializable("" + index);
-//            Question question = new Question();
-//            question.setBody(parseProxyObject.getString("body"));
-//            question.setQuestionId(parseProxyObject.getString("questionId"));
-//            //question.setObjectId(parseProxyObject.getString("objectId"));
-//            mQuestions.add(question);
-//
-//            Log.d(TAG, "onCreate  index = " + index + " " + parseProxyObject.getString("questionId") + " " + question.getBody());
-//        }
         mQuestionAdapter = new QuestionAdapter(mQuestions);
         mQuestionAdapter.setDelegate(this);
     }
@@ -84,9 +71,12 @@ public class QuestionListFragment extends Fragment implements
     public void onQuestionClicked(QuestionAdapter questionAdapter, ParseObject question) {
         Log.d(TAG, "onQuestionClicked: " + question.getString("body"));
         if (getDelegate() != null) {
-            getDelegate().onQuestionClicked(QuestionListFragment.this, question);
+            Log.d(TAG, "onQuestionClicked: call delegate click handler");
+            getDelegate().onQuestionListClicked(question);
         }
+        Log.d(TAG, "onQuestionClicked: end");
     }
+
 
     public Delegate getDelegate() {
         if (delegate == null) {
@@ -95,8 +85,16 @@ public class QuestionListFragment extends Fragment implements
         return delegate.get();
     }
 
-    public void setDelegate(Delegate delegate) {
-        this.delegate = new WeakReference<Delegate>(delegate);
+    /*
+     * IDelegatingFragment
+     */
+    public void setDelegate(IFragmentDelegate iFragmentDelegate) {
+        if (iFragmentDelegate != null) {
+            Delegate delegate = (Delegate) iFragmentDelegate;
+            if (delegate != null) {
+                this.delegate = new WeakReference<Delegate>(delegate);
+            }
+        }
     }
 
     /*

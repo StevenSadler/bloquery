@@ -19,10 +19,13 @@ import com.stevensadler.android.bloquery.R;
 import com.stevensadler.android.bloquery.ui.BloqueryApplication;
 import com.stevensadler.android.bloquery.ui.fragment.AddQuestionDialogFragment;
 import com.stevensadler.android.bloquery.ui.fragment.GenericMessageFragment;
+import com.stevensadler.android.bloquery.ui.fragment.IDelegatingFragment;
+import com.stevensadler.android.bloquery.ui.fragment.IFragmentDelegate;
 import com.stevensadler.android.bloquery.ui.fragment.QuestionListFragment;
 import com.stevensadler.android.bloquery.ui.fragment.SingleQuestionFragment;
 
 public class BloqueryActivity extends AppCompatActivity implements
+        IFragmentDelegate,
         AddQuestionDialogFragment.AddQuestionDialogListener,
         QuestionListFragment.Delegate,
         SingleQuestionFragment.Delegate,
@@ -31,8 +34,6 @@ public class BloqueryActivity extends AppCompatActivity implements
     private static String TAG = BloqueryActivity.class.getSimpleName();
 
     private String AIRPLANE_MODE_ON_MESSAGE = "Airplane mode is on. No questions are available. Please turn Airplane mode off and click this text to view questions.";
-
-    private boolean hasAddedFirstFragment = false;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,8 +104,20 @@ public class BloqueryActivity extends AppCompatActivity implements
         if (isAirplaneModeOn(this)) {
             addGenericMessageFragment(AIRPLANE_MODE_ON_MESSAGE);
 
-        } else {
+        } else if (savedInstanceState == null) {
+            // the activity IS NOT being re-created
             addQuestionListFragment();
+        } else {
+            // the activity IS being re-created
+            int count = getFragmentManager().getBackStackEntryCount();
+            for (int index = 0; index < count ; index++) {
+                String name = getFragmentManager().getBackStackEntryAt(index).getName();
+                Log.d(TAG, "re-create " + index +  " " + name);
+                IDelegatingFragment iDelegatingFragment = (IDelegatingFragment) getFragmentManager().findFragmentByTag(name);
+                if (iDelegatingFragment != null) {
+                    iDelegatingFragment.setDelegate(this);
+                }
+            }
         }
     }
 
@@ -133,24 +146,22 @@ public class BloqueryActivity extends AppCompatActivity implements
     /*
      * QuestionListFragment.Delegate
      */
-    public void onQuestionClicked(QuestionListFragment questionListFragment, ParseObject question) {
+    public void onQuestionListClicked(ParseObject question) {
         // TODO: go to single question view
         Log.d(TAG, "onQuestionListClicked " + question.getString("body"));
-        BloqueryApplication.getSharedDataSource().setSelectedQuestion(question);
         addSingleQuestionFragment(question);
     }
 
     /*
      * SingleQuestionFragment.Delegate
      */
-    public void onQuestionClicked(SingleQuestionFragment singleQuestionFragment, ParseObject question) {
+    public void onSingleQuestionClicked(ParseObject question) {
         // TODO: go to question list view
         Log.d(TAG, "onSingleQuestionClicked " + question.getString("body"));
-        BloqueryApplication.getSharedDataSource().setSelectedQuestion(null);
         addQuestionListFragment();
     }
 
-    public void onSubmitAnswerClicked(SingleQuestionFragment singleQuestionFragment, ParseObject question, String answerBody) {
+    public void onSubmitAnswerClicked(ParseObject question, String answerBody) {
         // TODO: go to question list view
         Log.d(TAG, "onSubmitAnswerClicked " + answerBody);
 
@@ -161,7 +172,7 @@ public class BloqueryActivity extends AppCompatActivity implements
     /*
      * GenericMessageFragment.Delegate
      */
-    public void onGenericMessageClicked(GenericMessageFragment genericMessageFragment, String genericMessage) {
+    public void onGenericMessageClicked(String genericMessage) {
         // TODO: go to question list view
         Log.d(TAG, "onGenericMessageClicked " + genericMessage);
         if (!isAirplaneModeOn(this)) {
@@ -208,21 +219,12 @@ public class BloqueryActivity extends AppCompatActivity implements
      * Private methods
      */
 
-    private void addFragment(Fragment fragment) {
-        if (hasAddedFirstFragment) {
-            getFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fl_fragment_container, fragment, null)
-                    .addToBackStack(null)
-                    .commit();
-        } else {
-            hasAddedFirstFragment = true;
-            getFragmentManager()
-                    .beginTransaction()
-                    .add(R.id.fl_fragment_container, fragment, null)
-                    .addToBackStack(null)
-                    .commit();
-        }
+    private void addFragment(Fragment fragment, String tag) {
+        getFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fl_fragment_container, fragment, tag)
+                .addToBackStack(tag)
+                .commit();
     }
 
     private void addQuestionListFragment() {
@@ -235,7 +237,7 @@ public class BloqueryActivity extends AppCompatActivity implements
         QuestionListFragment fragment = new QuestionListFragment();
         fragment.setDelegate(this);
         BloqueryApplication.getSharedDataSource().addObserver(fragment);
-        addFragment(fragment);
+        addFragment(fragment, "TagQuestionListFragment");
     }
 
     private void addSingleQuestionFragment(final ParseObject question) {
@@ -245,12 +247,15 @@ public class BloqueryActivity extends AppCompatActivity implements
             return;
         }
 
-        Log.d(TAG, "addSingleQuestionFragment " + question.getString("body"));
+        Log.d(TAG, "addSingleQuestionFragment " + question.getObjectId() + " " + question.getString("body"));
 
         SingleQuestionFragment fragment = new SingleQuestionFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString("questionObjectId", question.getObjectId());
+        fragment.setArguments(bundle);
         fragment.setDelegate(this);
         BloqueryApplication.getSharedDataSource().addObserver(fragment);
-        addFragment(fragment);
+        addFragment(fragment, "TagSingleQuestionFragment");
     }
 
     private void addGenericMessageFragment(String message) {
@@ -261,8 +266,8 @@ public class BloqueryActivity extends AppCompatActivity implements
         Bundle bundle = new Bundle();
         bundle.putString("message", message);
         fragment.setArguments(bundle);
-        fragment.setDelegate(BloqueryActivity.this);
-        addFragment(fragment);
+        fragment.setDelegate(this);
+        addFragment(fragment, "TagGenericMessageFragment");
     }
 
     @SuppressWarnings("deprecation")

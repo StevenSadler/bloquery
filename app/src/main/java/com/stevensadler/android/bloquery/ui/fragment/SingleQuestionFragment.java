@@ -26,23 +26,22 @@ import java.util.Observer;
  * Created by Steven on 1/9/2016.
  */
 public class SingleQuestionFragment extends Fragment implements
+        IDelegatingFragment,
         Observer,
-        View.OnClickListener { //}, QuestionAdapter.Delegate {
+        View.OnClickListener {
 
-    public static interface Delegate {
-        public void onQuestionClicked(SingleQuestionFragment singleQuestionFragment, ParseObject question);
-        public void onSubmitAnswerClicked(SingleQuestionFragment singleQuestionFragment, ParseObject question, String answerBody);
+    public static interface Delegate extends IFragmentDelegate {
+        public void onSingleQuestionClicked(ParseObject question);
+        public void onSubmitAnswerClicked(ParseObject question, String answerBody);
     }
 
     private static String TAG = SingleQuestionFragment.class.getSimpleName();
-
 
     private ParseObject mQuestion;
     private TextView mTextView;
     private EditText mEditText;
     private Button mSubmitButton;
 
-    private List<ParseObject> mAnswers;
     private RecyclerView mRecyclerView;
     private AnswerAdapter mAnswerAdapter;
 
@@ -52,33 +51,13 @@ public class SingleQuestionFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mQuestion = BloqueryApplication.getSharedDataSource().getSelectedQuestion();
-
-        mAnswers = mQuestion.getList("answerList");
-
-        // for now, test with an empty array
-        //mAnswers = new ArrayList<ParseObject>();
-
         Log.d(TAG, "onCreate");
 
-//        List<Question> questions = new ArrayList<Question>();
-//
-//        ParseProxyObject parseProxyQuestion = (ParseProxyObject) getArguments().getSerializable("questionObject");
-//        mQuestion = new Question();
-//        mQuestion.setBody(parseProxyQuestion.getString("body"));
-//        mQuestion.setQuestionId(parseProxyQuestion.getString("questionId"));
-//
-//        int size = getArguments().getInt("size");
-//        for (int index = 0; index < size; index++) {
-//            ParseProxyObject parseProxyObject = (ParseProxyObject) getArguments().getSerializable("" + index);
-//            Answer answer = new Answer();
-//            answer.setBody(parseProxyObject.getString("body"));
-//            answer.setQuestionId(parseProxyObject.getString("questionId"));
-//            mAnswers.add(answer);
-//
-//            Log.d(TAG, "onCreate  index = " + index + " " + parseProxyObject.getString("questionId") + " " + mQuestion.getBody());
-//        }
-        mAnswerAdapter = new AnswerAdapter(mAnswers);
+        String questionId = getArguments().getString("questionObjectId");
+
+        mQuestion = BloqueryApplication.getSharedDataSource().getQuestionById(questionId);
+        List<ParseObject> answers = mQuestion.getList("answerList");
+        mAnswerAdapter = new AnswerAdapter(answers);
     }
 
     @Override
@@ -109,28 +88,16 @@ public class SingleQuestionFragment extends Fragment implements
     public void onClick(View view) {
         Log.d(TAG, "onClick");
         if (view == mTextView) {
+            Log.d(TAG, "onClick mTextView");
             if (getDelegate() != null) {
-                getDelegate().onQuestionClicked(SingleQuestionFragment.this, mQuestion);
+                getDelegate().onSingleQuestionClicked(mQuestion);
             }
         } else if (view == mSubmitButton) {
-
+            Log.d(TAG, "onClick mSubmitButton");
             if (getDelegate() != null) {
 
                 String answerBody = mEditText.getText().toString();
-                getDelegate().onSubmitAnswerClicked(SingleQuestionFragment.this, mQuestion, answerBody);
-
-//
-//                Answer answer = new Answer();
-//                //answer.setQuestionId(mQuestion.getQuestionId());
-//                answer.setBody(mEditText.getText().toString());
-//                answer.saveInBackground();
-//                getDelegate().onSubmitAnswerClicked(SingleQuestionFragment.this, answer);
-//
-////                ParseObject answer = new ParseObject("Answer");
-////                answer.put("body", mEditText.getText().toString());
-////                answer.put("question", mPOQuestion);
-////                answer.saveInBackground();
-////                getDelegate().onSubmitAnswerClicked(SingleQuestionFragment.this, answer);
+                getDelegate().onSubmitAnswerClicked(mQuestion, answerBody);
             }
         }
     }
@@ -146,8 +113,16 @@ public class SingleQuestionFragment extends Fragment implements
         return delegate.get();
     }
 
-    public void setDelegate(Delegate delegate) {
-        this.delegate = new WeakReference<Delegate>(delegate);
+    /*
+     * IDelegatingFragment
+     */
+    public void setDelegate(IFragmentDelegate iFragmentDelegate) {
+        if (iFragmentDelegate != null) {
+            Delegate delegate = (Delegate) iFragmentDelegate;
+            if (delegate != null) {
+                this.delegate = new WeakReference<Delegate>(delegate);
+            }
+        }
     }
 
     /*
@@ -156,26 +131,17 @@ public class SingleQuestionFragment extends Fragment implements
     @Override
     public void update(Observable observable, Object data) {
         Log.d(TAG, "update");
-//
-//        List<ParseObject> questions = BloqueryApplication.getSharedDataSource().getQuestions();
-//        for (ParseObject question : questions) {
-//            Log.d(TAG, question.getString("body"));
-//        }
-//        mQuestions = questions;
-//
-//        mQuestionAdapter = new QuestionAdapter(mQuestions);
-//        mQuestionAdapter.setDelegate(this);
-//        mRecyclerView.setAdapter(mQuestionAdapter);
 
+        String oldQuestionId = mQuestion.getObjectId();
+        ParseObject question = BloqueryApplication.getSharedDataSource().getQuestionById(oldQuestionId);
 
-//        List<ParseObject> questions = (List<ParseObject>) data;
-//        for (ParseObject question : questions) {
-//            Log.d(TAG, question.getString("body"));
-//        }
-//        mQuestions = questions;
-//
-//        mQuestionAdapter = new QuestionAdapter(mQuestions);
-//        mQuestionAdapter.setDelegate(this);
-//        mRecyclerView.setAdapter(mQuestionAdapter);
+        // if old question is still in the new pull query result
+        // then refresh the view, otherwise ignore the update
+        if (question != null) {
+            mQuestion = question;
+            List<ParseObject> answers = mQuestion.getList("answerList");
+            mAnswerAdapter = new AnswerAdapter(answers);
+            mRecyclerView.setAdapter(mAnswerAdapter);
+        }
     }
 }
