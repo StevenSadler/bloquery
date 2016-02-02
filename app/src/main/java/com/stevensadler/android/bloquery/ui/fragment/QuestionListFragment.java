@@ -29,6 +29,7 @@ public class QuestionListFragment extends Fragment implements
 
     public static interface Delegate extends IFragmentDelegate {
         public void onQuestionListClicked(ParseObject question);
+        //public void setDelegate(Delegate delegate);
     }
 
     private static String TAG = QuestionListFragment.class.getSimpleName();
@@ -63,6 +64,22 @@ public class QuestionListFragment extends Fragment implements
         return view;
     }
 
+    /*
+     * Observer
+     */
+    @Override
+    public void update(Observable observable, Object data) {
+        Log.d(TAG, "update");
+
+        List<ParseObject> questions = BloqueryApplication.getSharedDataSource().getQuestions();
+        for (ParseObject question : questions) {
+            Log.d(TAG, question.getString("body"));
+        }
+        mQuestions = questions;
+        mQuestionAdapter = new QuestionAdapter(mQuestions);
+        mQuestionAdapter.setDelegate(this);
+        mRecyclerView.setAdapter(mQuestionAdapter);
+    }
 
     /*
      * QuestionAdapter.Delegate
@@ -76,7 +93,6 @@ public class QuestionListFragment extends Fragment implements
         }
         Log.d(TAG, "onQuestionClicked: end");
     }
-
 
     public Delegate getDelegate() {
         if (delegate == null) {
@@ -95,22 +111,5 @@ public class QuestionListFragment extends Fragment implements
                 this.delegate = new WeakReference<Delegate>(delegate);
             }
         }
-    }
-
-    /*
-     * Observer
-     */
-    @Override
-    public void update(Observable observable, Object data) {
-        Log.d(TAG, "update");
-
-        List<ParseObject> questions = BloqueryApplication.getSharedDataSource().getQuestions();
-        for (ParseObject question : questions) {
-            Log.d(TAG, question.getString("body"));
-        }
-        mQuestions = questions;
-        mQuestionAdapter = new QuestionAdapter(mQuestions);
-        mQuestionAdapter.setDelegate(this);
-        mRecyclerView.setAdapter(mQuestionAdapter);
     }
 }

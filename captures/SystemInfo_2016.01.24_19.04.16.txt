@@ -1,0 +1,38 @@
+Number of Packages:290
+
+Activity Resolver Table:
+  Non-Data Actions:
+      android.intent.action.MAIN:
+        d7ff5a5 com.stevensadler.android.bloquery/.ui.activity.BloqueryActivity filter 9b80897
+          Action: "android.intent.action.MAIN"
+          Category: "android.intent.category.LAUNCHER"
+
+Key Set Manager:
+  [com.stevensadler.android.bloquery]
+      Signing KeySets: 930
+
+Packages:
+  Package [com.stevensadler.android.bloquery] (2de7d055):
+    userId=10066 gids=[3003]
+    pkg=Package{1ef20d7a com.stevensadler.android.bloquery}
+    codePath=/data/app/com.stevensadler.android.bloquery-1
+    resourcePath=/data/app/com.stevensadler.android.bloquery-1
+    legacyNativeLibraryDir=/data/app/com.stevensadler.android.bloquery-1/lib
+    primaryCpuAbi=null
+    secondaryCpuAbi=null
+    versionCode=1 targetSdk=23
+    versionName=1.0
+    applicationInfo=ApplicationInfo{1387192b com.stevensadler.android.bloquery}
+    flags=[ DEBUGGABLE HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP ]
+    dataDir=/data/data/com.stevensadler.android.bloquery
+    supportsScreens=[small, medium, large, xlarge, resizeable, anyDensity]
+    timeStamp=2016-01-24 18:44:53
+    firstInstallTime=2016-01-11 23:20:47
+    lastUpdateTime=2016-01-24 18:44:53
+    signatures=PackageSignatures{1269dff8 [1c730188]}
+    permissionsFixed=true haveGids=true installStatus=1
+    pkgFlags=[ DEBUGGABLE HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP ]
+    User 0:  installed=true hidden=false stopped=false notLaunched=false enabled=0
+    grantedPermissions:
+      android.permission.ACCESS_NETWORK_STATE
+      android.permission.INTERNET

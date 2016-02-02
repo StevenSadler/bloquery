@@ -1,13 +1,18 @@
 package com.stevensadler.android.bloquery.network;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
+import java.io.ByteArrayOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,13 +24,16 @@ public class NetworkManager {
 
     public interface Delegate {
         public void onPullQuestions(List<ParseObject> objects);
+
+        public void onPullCurrentUserProfile(ParseObject object);
     }
 
     private String TAG = NetworkManager.class.getSimpleName();
 
     private WeakReference<Delegate> delegate;
 
-    public NetworkManager() {}
+    public NetworkManager() {
+    }
 
     public void pullQuestions() {
 
@@ -42,6 +50,50 @@ public class NetworkManager {
                     }
                 } else {
                     Log.d(TAG, "parse query: Error: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    public void pullCurrentUserProfile() {
+
+        ParseUser currentUser = ParseUser.getCurrentUser();
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Profile");
+        query.whereEqualTo("createdBy", currentUser);
+        query.getFirstInBackground(new GetCallback<ParseObject>() {
+            @Override
+            public void done(ParseObject object, ParseException e) {
+                if (e == null) {
+                    if (getDelegate() != null) {
+                        getDelegate().onPullCurrentUserProfile(object);
+                    }
+                } else {
+                    Log.d(TAG, "parse query: Error: " + e.getMessage());
+                    if (object == null) {
+                        Log.d(TAG, "Profile object is null");
+                        createUserProfile();
+                    }
+                }
+            }
+        });
+    }
+
+    public void createUserProfile() {
+        // create a new empty profile with only placeholder description
+        final ParseObject profile = new ParseObject("Profile");
+        profile.put("description","Description of " + ParseUser.getCurrentUser().getUsername());
+        profile.put("createdBy", ParseUser.getCurrentUser());
+        profile.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e == null) {
+                    Log.d(TAG, "New Profile created");
+                    if (getDelegate() != null) {
+                        getDelegate().onPullCurrentUserProfile(profile);
+                    }
+                } else {
+                    Log.d(TAG, "Profile creation Error");
                 }
             }
         });
@@ -86,6 +138,32 @@ public class NetworkManager {
 
         question.add("answerList", answer);
         question.saveInBackground();
+    }
+
+    public void saveProfile(final ParseObject profile, Bitmap bitmap, String description) {
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        byte[] image = stream.toByteArray();
+
+        ParseFile parseFile = new ParseFile("user.jpeg", image);
+
+        profile.put("description", description);
+        profile.put("imageFile", parseFile);
+        profile.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e == null) {
+                    Log.d(TAG, "Profile edited");
+                    if (getDelegate() != null) {
+                        getDelegate().onPullCurrentUserProfile(profile);
+                    }
+                } else {
+                    Log.d(TAG, "Profile edit Error");
+                }
+            }
+        });
+
     }
 
     /*

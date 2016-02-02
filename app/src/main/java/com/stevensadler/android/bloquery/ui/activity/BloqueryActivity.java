@@ -3,6 +3,7 @@ package com.stevensadler.android.bloquery.ui.activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
@@ -21,12 +22,14 @@ import com.stevensadler.android.bloquery.ui.fragment.AddQuestionDialogFragment;
 import com.stevensadler.android.bloquery.ui.fragment.GenericMessageFragment;
 import com.stevensadler.android.bloquery.ui.fragment.IDelegatingFragment;
 import com.stevensadler.android.bloquery.ui.fragment.IFragmentDelegate;
+import com.stevensadler.android.bloquery.ui.fragment.ProfileEditorFragment;
 import com.stevensadler.android.bloquery.ui.fragment.QuestionListFragment;
 import com.stevensadler.android.bloquery.ui.fragment.SingleQuestionFragment;
 
 public class BloqueryActivity extends AppCompatActivity implements
         IFragmentDelegate,
         AddQuestionDialogFragment.AddQuestionDialogListener,
+        ProfileEditorFragment.Delegate,
         QuestionListFragment.Delegate,
         SingleQuestionFragment.Delegate,
         GenericMessageFragment.Delegate {
@@ -91,6 +94,7 @@ public class BloqueryActivity extends AppCompatActivity implements
 //                TestQuestionCreator testQC = new TestQuestionCreator();
 //                testQC.addQuestion("How do you add an empty array of answers to a question?");
 
+                BloqueryApplication.getSharedNetworkManager().pullCurrentUserProfile();
                 Toast.makeText(this, "Welcome " + currentUser.getUsername(), Toast.LENGTH_LONG).show();
             } else {
                 // send user to LoginSignupActivity.class
@@ -113,12 +117,23 @@ public class BloqueryActivity extends AppCompatActivity implements
             for (int index = 0; index < count ; index++) {
                 String name = getFragmentManager().getBackStackEntryAt(index).getName();
                 Log.d(TAG, "re-create " + index +  " " + name);
-                IDelegatingFragment iDelegatingFragment = (IDelegatingFragment) getFragmentManager().findFragmentByTag(name);
-                if (iDelegatingFragment != null) {
-                    iDelegatingFragment.setDelegate(this);
+                try {
+                    IDelegatingFragment iDelegatingFragment = (IDelegatingFragment) getFragmentManager().findFragmentByTag(name);
+                    if (iDelegatingFragment != null) {
+                        iDelegatingFragment.setDelegate(this);
+                    }
+
+                } catch (ClassCastException e) {
+                    // ignore non-delegating fragments
                 }
             }
         }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult");
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -147,7 +162,6 @@ public class BloqueryActivity extends AppCompatActivity implements
      * QuestionListFragment.Delegate
      */
     public void onQuestionListClicked(ParseObject question) {
-        // TODO: go to single question view
         Log.d(TAG, "onQuestionListClicked " + question.getString("body"));
         addSingleQuestionFragment(question);
     }
@@ -156,28 +170,36 @@ public class BloqueryActivity extends AppCompatActivity implements
      * SingleQuestionFragment.Delegate
      */
     public void onSingleQuestionClicked(ParseObject question) {
-        // TODO: go to question list view
         Log.d(TAG, "onSingleQuestionClicked " + question.getString("body"));
-        addQuestionListFragment();
+        getFragmentManager().popBackStack();
     }
 
     public void onSubmitAnswerClicked(ParseObject question, String answerBody) {
-        // TODO: go to question list view
         Log.d(TAG, "onSubmitAnswerClicked " + answerBody);
 
         BloqueryApplication.getSharedNetworkManager().addAnswer(question, answerBody);
-        addQuestionListFragment();
+        getFragmentManager().popBackStack();
     }
 
     /*
      * GenericMessageFragment.Delegate
      */
     public void onGenericMessageClicked(String genericMessage) {
-        // TODO: go to question list view
         Log.d(TAG, "onGenericMessageClicked " + genericMessage);
         if (!isAirplaneModeOn(this)) {
             addQuestionListFragment();
         }
+    }
+
+    /*
+     * ProfileEditorFragment.Delegate
+     */
+    public void onProfileSaveClicked(Bitmap bitmap, String description) {
+        Log.d(TAG, "onProfileSaveClicked " + description);
+
+        ParseObject profile = BloqueryApplication.getSharedDataSource().getCurrentUserProfile();
+        BloqueryApplication.getSharedNetworkManager().saveProfile(profile, bitmap, description);
+        getFragmentManager().popBackStack();
     }
 
     /*
@@ -201,6 +223,11 @@ public class BloqueryActivity extends AppCompatActivity implements
                 LoginSignupActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    public void onMenuProfileClick(MenuItem menuItem) {
+        Log.d(TAG, "onMenuProfileClick 2");
+        addProfileEditorFragment();
     }
 
     public void onMenuRefreshDataClick(MenuItem menuItem) {
@@ -268,6 +295,15 @@ public class BloqueryActivity extends AppCompatActivity implements
         fragment.setArguments(bundle);
         fragment.setDelegate(this);
         addFragment(fragment, "TagGenericMessageFragment");
+    }
+
+    private void addProfileEditorFragment() {
+
+        Log.d(TAG, "addProfileEditorFragment");
+
+        ProfileEditorFragment fragment = new ProfileEditorFragment();
+        fragment.setDelegate(this);
+        addFragment(fragment, "TagProfileEditorFragment");
     }
 
     @SuppressWarnings("deprecation")
