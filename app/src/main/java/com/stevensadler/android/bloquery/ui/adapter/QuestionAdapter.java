@@ -1,14 +1,18 @@
 package com.stevensadler.android.bloquery.ui.adapter;
 
+import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.parse.ParseObject;
+import com.parse.ParseUser;
 import com.stevensadler.android.bloquery.R;
+import com.stevensadler.android.bloquery.ui.BloqueryApplication;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -20,6 +24,7 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
 
     public static interface Delegate {
         public void onQuestionClicked(QuestionAdapter questionAdapter, ParseObject question);
+        public void onUserProfileImageClicked(ParseUser parseUser);
     }
 
     private String TAG = QuestionAdapter.class.getSimpleName();
@@ -70,6 +75,7 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
     class QuestionHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public TextView questionTextView;
+        public ImageView questionAuthorImageView;
 
         private ParseObject mQuestion;
 
@@ -77,19 +83,35 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
             super(itemView);
             questionTextView = (TextView) itemView.findViewById(R.id.tv_question_item_body);
             questionTextView.setOnClickListener(this);
+            questionAuthorImageView = (ImageView) itemView.findViewById(R.id.iv_question_item_image);
+            questionAuthorImageView.setOnClickListener(this);
         }
 
         void update(ParseObject question) {
             mQuestion = question;
             String text = question.getString("body");
             questionTextView.setText(text);
+
+            // use test image until i can get question author's profile image
+            //questionAuthorImageView.setImageBitmap(BloqueryApplication.getSharedDataSource().getCurrentUserProfileImage());
+
+            ParseUser questionAuthor = question.getParseUser("createdBy");
+            Bitmap bitmap = BloqueryApplication.getSharedDataSource().getUserProfileImage(questionAuthor);
+            questionAuthorImageView.setImageBitmap(bitmap);
         }
 
         @Override
         public void onClick(View view) {
             Log.d(TAG, "onClick");
-            if (getDelegate() != null) {
-                getDelegate().onQuestionClicked(QuestionAdapter.this, mQuestion);
+            if (view == questionTextView) {
+                if (getDelegate() != null) {
+                    getDelegate().onQuestionClicked(QuestionAdapter.this, mQuestion);
+                }
+            } else if (view == questionAuthorImageView) {
+                Log.d(TAG, "onClick on questionAuthorImageView");
+                if (getDelegate() != null) {
+                    getDelegate().onUserProfileImageClicked(mQuestion.getParseUser("createdBy"));
+                }
             }
         }
     }

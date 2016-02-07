@@ -10,9 +10,7 @@ import android.widget.Toast;
 
 import com.parse.LogInCallback;
 import com.parse.ParseException;
-import com.parse.ParseObject;
 import com.parse.ParseUser;
-import com.parse.SaveCallback;
 import com.parse.SignUpCallback;
 import com.stevensadler.android.bloquery.R;
 
@@ -88,6 +86,7 @@ public class LoginSignupActivity extends AppCompatActivity {
                     ParseUser user = new ParseUser();
                     user.setUsername(usernameText);
                     user.setPassword(passwordText);
+                    user.put("profileDescription", "Welcome " + usernameText);
                     user.signUpInBackground(new SignUpCallback() {
                         @Override
                         public void done(ParseException e) {
@@ -97,24 +96,24 @@ public class LoginSignupActivity extends AppCompatActivity {
                                         "Successfully signed up, please log in.",
                                         Toast.LENGTH_LONG).show();
 
-                                // create a new empty profile with only placeholder description
-                                ParseObject profile = new ParseObject("Profile");
-                                profile.put("description", "Welcome " + usernameText);
-                                profile.put("createdBy", ParseUser.getCurrentUser());
-                                profile.saveInBackground(new SaveCallback() {
-                                    @Override
-                                    public void done(ParseException e) {
-                                        if (e == null) {
-                                            Toast.makeText(getApplicationContext(),
-                                                    "New Profile created",
-                                                    Toast.LENGTH_LONG).show();
-                                        } else {
-                                            Toast.makeText(getApplicationContext(),
-                                                    "Profile creation Error",
-                                                    Toast.LENGTH_LONG).show();
-                                        }
-                                    }
-                                });
+//                                // create a new empty profile with only placeholder description
+//                                ParseObject profile = new ParseObject("Profile");
+//                                profile.put("description", "Welcome " + usernameText);
+//                                profile.put("createdBy", ParseUser.getCurrentUser());
+//                                profile.saveInBackground(new SaveCallback() {
+//                                    @Override
+//                                    public void done(ParseException e) {
+//                                        if (e == null) {
+//                                            Toast.makeText(getApplicationContext(),
+//                                                    "New Profile created",
+//                                                    Toast.LENGTH_LONG).show();
+//                                        } else {
+//                                            Toast.makeText(getApplicationContext(),
+//                                                    "Profile creation Error",
+//                                                    Toast.LENGTH_LONG).show();
+//                                        }
+//                                    }
+//                                });
                             } else {
                                 Toast.makeText(getApplicationContext(),
                                         "Sign up Error",

@@ -167,6 +167,21 @@ public class BloqueryActivity extends AppCompatActivity implements
     }
 
     /*
+     * QuestionListFragment.Delegate
+     * SingleQuestionFragment.Delegate
+     */
+    @Override
+    public void onUserProfileImageClicked(ParseUser parseUser) {
+        if (ParseUser.getCurrentUser().getObjectId().equals(parseUser.getObjectId())) {
+            // do something with current user profile image click, like open profile editor instead of profile view
+            Log.d(TAG, "currentUser profile click - need to open profile viewer or editor");
+        } else {
+            // open profile view
+            Log.d(TAG, "some other user profile click - need to open profile viewer");
+        }
+    }
+
+    /*
      * SingleQuestionFragment.Delegate
      */
     public void onSingleQuestionClicked(ParseObject question) {
@@ -197,8 +212,9 @@ public class BloqueryActivity extends AppCompatActivity implements
     public void onProfileSaveClicked(Bitmap bitmap, String description) {
         Log.d(TAG, "onProfileSaveClicked " + description);
 
-        ParseObject profile = BloqueryApplication.getSharedDataSource().getCurrentUserProfile();
-        BloqueryApplication.getSharedNetworkManager().saveProfile(profile, bitmap, description);
+        //ParseObject profile = BloqueryApplication.getSharedDataSource().getCurrentUserProfile();
+        //BloqueryApplication.getSharedNetworkManager().saveProfile(profile, bitmap, description);
+        BloqueryApplication.getSharedNetworkManager().saveProfile(bitmap, description);
         getFragmentManager().popBackStack();
     }
 
