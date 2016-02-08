@@ -23,6 +23,7 @@ import com.stevensadler.android.bloquery.ui.fragment.GenericMessageFragment;
 import com.stevensadler.android.bloquery.ui.fragment.IDelegatingFragment;
 import com.stevensadler.android.bloquery.ui.fragment.IFragmentDelegate;
 import com.stevensadler.android.bloquery.ui.fragment.ProfileEditorFragment;
+import com.stevensadler.android.bloquery.ui.fragment.ProfileFragment;
 import com.stevensadler.android.bloquery.ui.fragment.QuestionListFragment;
 import com.stevensadler.android.bloquery.ui.fragment.SingleQuestionFragment;
 
@@ -175,9 +176,11 @@ public class BloqueryActivity extends AppCompatActivity implements
         if (ParseUser.getCurrentUser().getObjectId().equals(parseUser.getObjectId())) {
             // do something with current user profile image click, like open profile editor instead of profile view
             Log.d(TAG, "currentUser profile click - need to open profile viewer or editor");
+            addProfileEditorFragment();
         } else {
             // open profile view
             Log.d(TAG, "some other user profile click - need to open profile viewer");
+            addProfileFragment(parseUser);
         }
     }
 
@@ -320,6 +323,18 @@ public class BloqueryActivity extends AppCompatActivity implements
         ProfileEditorFragment fragment = new ProfileEditorFragment();
         fragment.setDelegate(this);
         addFragment(fragment, "TagProfileEditorFragment");
+    }
+
+    private void addProfileFragment(ParseUser parseUser) {
+
+        Log.d(TAG, "addProfileFragment");
+
+        ProfileFragment fragment = new ProfileFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString("userObjectId", parseUser.getObjectId());
+        bundle.putString("userProfileDescription", parseUser.getString("profileDescription"));
+        fragment.setArguments(bundle);
+        addFragment(fragment, "TagProfileFragment");
     }
 
     @SuppressWarnings("deprecation")
