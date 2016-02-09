@@ -85,7 +85,7 @@ public class SingleQuestionFragment extends Fragment implements
         ParseUser questionAuthor = mQuestion.getParseUser("createdBy");
         //Log.d(TAG, "create single question for user " + questionAuthor.getUsername());
 
-        Bitmap bitmap = BloqueryApplication.getSharedDataSource().getUserProfileImage(questionAuthor);
+        Bitmap bitmap = BloqueryApplication.getSharedDataSource().getUserProfileImage(questionAuthor.getObjectId());
         mQuestionAuthorImageView.setImageBitmap(bitmap);
 
         mTextView.setText(mQuestion.getString("body"));

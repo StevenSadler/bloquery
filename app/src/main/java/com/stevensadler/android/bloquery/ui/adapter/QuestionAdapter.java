@@ -96,7 +96,7 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
             //questionAuthorImageView.setImageBitmap(BloqueryApplication.getSharedDataSource().getCurrentUserProfileImage());
 
             ParseUser questionAuthor = question.getParseUser("createdBy");
-            Bitmap bitmap = BloqueryApplication.getSharedDataSource().getUserProfileImage(questionAuthor);
+            Bitmap bitmap = BloqueryApplication.getSharedDataSource().getUserProfileImage(questionAuthor.getObjectId());
             questionAuthorImageView.setImageBitmap(bitmap);
         }
 

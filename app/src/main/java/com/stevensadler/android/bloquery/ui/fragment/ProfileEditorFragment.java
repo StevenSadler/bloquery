@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.parse.ParseUser;
 import com.stevensadler.android.bloquery.R;
@@ -171,7 +172,12 @@ public class ProfileEditorFragment extends Fragment implements
         } else if (view == mSaveButton) {
             String description = mDescriptionText.getText().toString();
             Log.d(TAG, "onClick mSaveButton " + description);
-            if (getDelegate() != null) {
+            if (mBitmap == null) {
+                // or if description is empty?
+                Toast.makeText(getActivity().getApplicationContext(),
+                        "Select a profile image before saving",
+                        Toast.LENGTH_LONG).show();
+            } else if (getDelegate() != null) {
                 getDelegate().onProfileSaveClicked(mBitmap, description);
             }
         } else if (view == mExitButton) {

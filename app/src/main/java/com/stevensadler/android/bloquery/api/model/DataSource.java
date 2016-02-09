@@ -46,11 +46,12 @@ public class DataSource extends Observable implements
     public Bitmap getCurrentUserProfileImage() {
         return mCurrentUserProfileImage;
     }
-    public Bitmap getUserProfileImage(ParseUser user) {
-        Log.d(TAG, "getUserProfileImage for user " + user.getObjectId());
+
+    public Bitmap getUserProfileImage(String userId) {
+        Log.d(TAG, "getUserProfileImage for user " + userId);
         Bitmap bitmap = null;
-        if (mUserProfileImages.containsKey(user.getObjectId())) {
-            bitmap = mUserProfileImages.get(user.getObjectId());
+        if (mUserProfileImages.containsKey(userId)) {
+            bitmap = mUserProfileImages.get(userId);
         }
         return bitmap;
     }
@@ -87,40 +88,18 @@ public class DataSource extends Observable implements
 
             if (questionAuthor != null && !mUserProfileImages.containsKey(questionAuthor.getObjectId())) {
 
-//                ParseFile parseFile;
-//                try {
-//                    parseFile = user.getParseFile("profileImage");
-//                } catch (IllegalStateException e) {
-//                    // ignore users that have no profileImage
-//                    continue;
-//                }
-//
-//                if (parseFile != null) {
-//                    parseFile.getDataInBackground(new GetDataCallback() {
-//                        @Override
-//                        public void done(byte[] data, ParseException e) {
-//                            if (e == null) {
-//                                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-//                                mUserProfileImages.put(user, bitmap);
-//                            } else {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    });
-//                }
-
                 mUserProfileImages.put(questionAuthor.getObjectId(), null);
                 addUserProfileImage(questionAuthor);
 
-//                List<ParseObject> answers = question.getList("answerList");
-//                for (ParseObject answer : answers) {
-//                    ParseUser answerAuthor = answer.getParseUser("createdBy");
-//                    if (answerAuthor != null && !mUserProfileImages.containsKey(answerAuthor.getObjectId())) {
-//
-//                        mUserProfileImages.put(answerAuthor.getObjectId(), null);
-//                        addUserProfileImage(answerAuthor);
-//                    }
-//                }
+                List<ParseObject> answers = question.getList("answerList");
+                for (ParseObject answer : answers) {
+                    ParseUser answerAuthor = answer.getParseUser("createdBy");
+                    if (answerAuthor != null && !mUserProfileImages.containsKey(answerAuthor.getObjectId())) {
+
+                        mUserProfileImages.put(answerAuthor.getObjectId(), null);
+                        addUserProfileImage(answerAuthor);
+                    }
+                }
             }
         }
         mQuestions = questions;

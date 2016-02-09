@@ -57,7 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/colorPrimaryDark"
-            android:text="@string/profile_editor_exit"
+            android:text="@string/profile_viewer_exit"
             android:layout_marginTop="6dp"
             android:layout_marginBottom="6dp"
             android:layout_marginRight="24dp"

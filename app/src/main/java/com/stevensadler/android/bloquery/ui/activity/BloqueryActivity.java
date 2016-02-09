@@ -14,9 +14,11 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.parse.ParseAnonymousUtils;
+import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.stevensadler.android.bloquery.R;
+import com.stevensadler.android.bloquery.test.TestQuestionCreator;
 import com.stevensadler.android.bloquery.ui.BloqueryApplication;
 import com.stevensadler.android.bloquery.ui.fragment.AddQuestionDialogFragment;
 import com.stevensadler.android.bloquery.ui.fragment.GenericMessageFragment;
@@ -45,7 +47,7 @@ public class BloqueryActivity extends AppCompatActivity implements
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-//        TestQuestionCreator testQC = new TestQuestionCreator();
+        TestQuestionCreator testQC = new TestQuestionCreator();
 //        testQC.addQuestion("Public write access to untracked author question created by " + ParseUser.getCurrentUser().getUsername());
 //        testQC.addQuestion("An untracked author question created by " + ParseUser.getCurrentUser().getUsername());
 //        testQC.addQuestion("A question created by " + ParseUser.getCurrentUser().getUsername());
@@ -67,7 +69,7 @@ public class BloqueryActivity extends AppCompatActivity implements
 //        testQC.addQuestion("Why is abbreviated such a long word?");
 //        testQC.addQuestion("Why is a boxing ring square?");
 //        testQC.addQuestion("What do you call a male ladybug?");
-//        testQC.addQuestion("If a person owns a piece of land, do they own it all the down to the core of the Earth?");
+//        testQC.addQuestion("If a person owns a piece of land, do they own it all the way down to the core of the Earth?");
 //        testQC.addQuestion("Why isn't phonetic spelled the way it sounds?");
 //        testQC.addQuestion("Why are there interstates in Hawaii?");
 //        testQC.addQuestion("Why are there flotation devices in the seats of airplanes instead of parachutes?");
@@ -329,10 +331,18 @@ public class BloqueryActivity extends AppCompatActivity implements
 
         Log.d(TAG, "addProfileFragment");
 
+        String description = "";
+        try {
+            description = parseUser.fetchIfNeeded().getString("profileDescription");
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
         ProfileFragment fragment = new ProfileFragment();
         Bundle bundle = new Bundle();
         bundle.putString("userObjectId", parseUser.getObjectId());
-        bundle.putString("userProfileDescription", parseUser.getString("profileDescription"));
+        bundle.putString("userName", parseUser.getUsername());
+        bundle.putString("userProfileDescription", description);
         fragment.setArguments(bundle);
         addFragment(fragment, "TagProfileFragment");
     }

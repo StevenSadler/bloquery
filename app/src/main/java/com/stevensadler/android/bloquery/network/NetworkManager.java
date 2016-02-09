@@ -38,7 +38,7 @@ public class NetworkManager {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Question");
         query.include("answerList");
         query.orderByDescending("createdAt");
-        query.setLimit(5);
+        query.setLimit(20);
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> objects, ParseException e) {

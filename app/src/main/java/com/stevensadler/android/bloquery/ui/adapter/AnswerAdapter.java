@@ -92,7 +92,7 @@ public class AnswerAdapter extends RecyclerView.Adapter<AnswerAdapter.AnswerHold
             answerTextView.setText(text);
 
             ParseUser answerAuthor = answer.getParseUser("createdBy");
-            Bitmap bitmap = BloqueryApplication.getSharedDataSource().getUserProfileImage(answerAuthor);
+            Bitmap bitmap = BloqueryApplication.getSharedDataSource().getUserProfileImage(answerAuthor.getObjectId());
             answerAuthorImageView.setImageBitmap(bitmap);
         }
 

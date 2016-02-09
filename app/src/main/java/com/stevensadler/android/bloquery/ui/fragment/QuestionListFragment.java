@@ -96,7 +96,7 @@ public class QuestionListFragment extends Fragment implements
     }
     @Override
     public void onUserProfileImageClicked(ParseUser parseUser) {
-        Log.d(TAG, "onUserProfileImageClicked");
+        //Log.d(TAG, "onUserProfileImageClicked parseUser name " + parseUser.getUsername());
         if (getDelegate() != null) {
             getDelegate().onUserProfileImageClicked(parseUser);
         }

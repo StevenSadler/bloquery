@@ -11,7 +11,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.parse.ParseUser;
 import com.stevensadler.android.bloquery.R;
 import com.stevensadler.android.bloquery.ui.BloqueryApplication;
 
@@ -24,12 +23,12 @@ public class ProfileFragment extends Fragment implements
     private static String TAG = ProfileFragment.class.getSimpleName();
 
     private TextView mUserNameView;
+    private TextView mDescriptionText;
     private ImageView mImageView;
     private Button mExitButton;
 
-    private Bitmap mBitmap;
-    private TextView mDescriptionText;
     private String mUserId;
+    private String mUserName;
     private String mUserProfileDescription;
 
     @Override
@@ -39,10 +38,8 @@ public class ProfileFragment extends Fragment implements
         Log.d(TAG, "onCreate");
 
         mUserId = getArguments().getString("userObjectId");
+        mUserName = getArguments().getString("userName");
         mUserProfileDescription = getArguments().getString("userProfileDescription");
-
-        // TODO finish this, in onCreateView get the user by the userObjectId, get the imagefile, get the bitmap
-
 
 //        ParseUser
 //
@@ -62,14 +59,12 @@ public class ProfileFragment extends Fragment implements
         mExitButton = (Button) view.findViewById(R.id.b_fragment_profile_exit);
 
         // TODO get name from DataSource instead of calling ParseUser
-        mUserNameView.setText(ParseUser.getCurrentUser().getUsername());
         mExitButton.setOnClickListener(this);
 
-        mDescriptionText.setText(BloqueryApplication.getSharedDataSource().getCurrentUserProfileDescription());
-        mBitmap = BloqueryApplication.getSharedDataSource().getCurrentUserProfileImage();
-        if (mBitmap != null) {
-            mImageView.setImageBitmap(mBitmap);
-        }
+        mUserNameView.setText(mUserName);
+        mDescriptionText.setText(mUserProfileDescription);
+        Bitmap bitmap = BloqueryApplication.getSharedDataSource().getUserProfileImage(mUserId);
+        mImageView.setImageBitmap(bitmap);
         return view;
     }
 
