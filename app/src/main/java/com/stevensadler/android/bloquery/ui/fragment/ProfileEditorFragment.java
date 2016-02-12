@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -16,9 +15,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.parse.ParseFile;
-import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.stevensadler.android.bloquery.R;
 import com.stevensadler.android.bloquery.ui.BloqueryApplication;
@@ -64,7 +62,7 @@ public class ProfileEditorFragment extends Fragment implements
 
         Log.d(TAG, "onCreate");
 
-        // TODO add retreiving image from profile object
+        // TODO add retrieving image from profile object
 
         //this.delegate = new WeakReference<Delegate>((Delegate) getActivity());
     }
@@ -88,20 +86,33 @@ public class ProfileEditorFragment extends Fragment implements
         mSaveButton.setOnClickListener(this);
         mExitButton.setOnClickListener(this);
 
-        ParseObject profile = BloqueryApplication.getSharedDataSource().getCurrentUserProfile();
-        mDescriptionText.setText(profile.getString("description"));
+//        ParseObject profile = BloqueryApplication.getSharedDataSource().getCurrentUserProfile();
+//        mDescriptionText.setText(profile.getString("description"));
+//
+//        ParseFile imageFile = profile.getParseFile("imageFile");
+//        if (imageFile != null) {
+//            try {
+//                byte[] imageBytes = imageFile.getData();
+//                mBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+//                mImageView.setImageBitmap(mBitmap);
+//            } catch (com.parse.ParseException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
-        ParseFile imageFile = profile.getParseFile("imageFile");
-        if (imageFile != null) {
-            try {
-                byte[] imageBytes = imageFile.getData();
-                mBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-                mImageView.setImageBitmap(mBitmap);
-            } catch (com.parse.ParseException e) {
-                e.printStackTrace();
-            }
+
+
+//        mDescriptionText.setText(ParseUser.getCurrentUser().get("profileDescription").toString());
+//        ImageFile imageFile = (ImageFile) ParseUser.getCurrentUser().getParseFile("profileImage");
+//        if (imageFile != null) {
+//            mBitmap = imageFile.getBitmap();
+//        }
+
+        mDescriptionText.setText(BloqueryApplication.getSharedDataSource().getCurrentUserProfileDescription());
+        mBitmap = BloqueryApplication.getSharedDataSource().getCurrentUserProfileImage();
+        if (mBitmap != null) {
+            mImageView.setImageBitmap(mBitmap);
         }
-
         return view;
     }
 
@@ -124,6 +135,7 @@ public class ProfileEditorFragment extends Fragment implements
                 Log.d(TAG, "onActivityResult    camera image");
 
                 mBitmap = (Bitmap) data.getExtras().get("data");
+                mBitmap = BitmapUtils.scaleDownBitmap(mBitmap, 1000f, true);
                 mImageView.setImageBitmap(mBitmap);
             }
         }
@@ -135,7 +147,7 @@ public class ProfileEditorFragment extends Fragment implements
     @Override
     public void update(Observable observable, Object data) {
         Log.d(TAG, "update");
-
+        // TODO does profile editor fragment really need to be an observer, since only the currentUser can change the data on this view?
     }
 
     /*
@@ -160,7 +172,12 @@ public class ProfileEditorFragment extends Fragment implements
         } else if (view == mSaveButton) {
             String description = mDescriptionText.getText().toString();
             Log.d(TAG, "onClick mSaveButton " + description);
-            if (getDelegate() != null) {
+            if (mBitmap == null) {
+                // or if description is empty?
+                Toast.makeText(getActivity().getApplicationContext(),
+                        "Select a profile image before saving",
+                        Toast.LENGTH_LONG).show();
+            } else if (getDelegate() != null) {
                 getDelegate().onProfileSaveClicked(mBitmap, description);
             }
         } else if (view == mExitButton) {

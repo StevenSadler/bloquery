@@ -11,16 +11,30 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/tv_fragment_single_question"
+        <LinearLayout
+            android:id="@+id/ll_fragment_single_question"
+            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/colorPrimaryDark"
-            android:text="test question"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp"
-            android:layout_marginRight="24dp"
-            android:layout_marginLeft="24dp"/>
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/iv_fragment_single_question_image"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:paddingBottom="10dp"/>
+
+            <TextView
+                android:id="@+id/tv_fragment_single_question"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorPrimaryDark"
+                android:text="test question"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:layout_marginRight="24dp"
+                android:layout_marginLeft="24dp"/>
+
+        </LinearLayout>
 
         <EditText
             android:id="@+id/et_fragment_single_question_answer"
@@ -28,7 +42,7 @@
             android:layout_height="wrap_content"
             android:textColor="@color/colorPrimaryDark"
             android:text="test answer"
-            android:layout_below="@+id/tv_fragment_single_question"
+            android:layout_below="@+id/ll_fragment_single_question"
             android:layout_marginTop="12dp"
             android:layout_marginBottom="12dp"
             android:layout_marginRight="24dp"

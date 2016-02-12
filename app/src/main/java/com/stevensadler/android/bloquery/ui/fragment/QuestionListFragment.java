@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.parse.ParseObject;
+import com.parse.ParseUser;
 import com.stevensadler.android.bloquery.R;
 import com.stevensadler.android.bloquery.ui.BloqueryApplication;
 import com.stevensadler.android.bloquery.ui.adapter.QuestionAdapter;
@@ -29,7 +30,7 @@ public class QuestionListFragment extends Fragment implements
 
     public static interface Delegate extends IFragmentDelegate {
         public void onQuestionListClicked(ParseObject question);
-        //public void setDelegate(Delegate delegate);
+        public void onUserProfileImageClicked(ParseUser parseUser);
     }
 
     private static String TAG = QuestionListFragment.class.getSimpleName();
@@ -92,6 +93,13 @@ public class QuestionListFragment extends Fragment implements
             getDelegate().onQuestionListClicked(question);
         }
         Log.d(TAG, "onQuestionClicked: end");
+    }
+    @Override
+    public void onUserProfileImageClicked(ParseUser parseUser) {
+        //Log.d(TAG, "onUserProfileImageClicked parseUser name " + parseUser.getUsername());
+        if (getDelegate() != null) {
+            getDelegate().onUserProfileImageClicked(parseUser);
+        }
     }
 
     public Delegate getDelegate() {

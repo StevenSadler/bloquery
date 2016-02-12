@@ -18,6 +18,9 @@
     <string name="accept_button">OK</string>
     <string name="clear_button">Clear</string>
 
+    <string name="profile_viewer_title">Profile Viewer</string>
+    <string name="profile_viewer_exit">Exit Viewer</string>
+
     <string name="profile_editor_title">Profile Editor</string>
     <string name="profile_gallery_button">Load Image</string>
     <string name="profile_camera_button">Use Camera</string>
