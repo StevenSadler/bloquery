@@ -10,7 +10,9 @@ import android.widget.Toast;
 
 import com.parse.LogInCallback;
 import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 import com.parse.SignUpCallback;
 import com.stevensadler.android.bloquery.R;
 
@@ -52,7 +54,7 @@ public class LoginSignupActivity extends AppCompatActivity {
                                     // if user exists and is authenticated, send user to Welcome.class
                                     Intent intent = new Intent(
                                             LoginSignupActivity.this,
-                                            Welcome.class);
+                                            BloqueryActivity.class);
                                     startActivity(intent);
                                     Toast.makeText(getApplicationContext(),
                                             "Successfully Logged in",
@@ -94,6 +96,25 @@ public class LoginSignupActivity extends AppCompatActivity {
                                 Toast.makeText(getApplicationContext(),
                                         "Successfully signed up, please log in.",
                                         Toast.LENGTH_LONG).show();
+
+                                // create a new empty profile with only placeholder description
+                                ParseObject profile = new ParseObject("Profile");
+                                profile.put("description", "Welcome " + usernameText);
+                                profile.put("createdBy", ParseUser.getCurrentUser());
+                                profile.saveInBackground(new SaveCallback() {
+                                    @Override
+                                    public void done(ParseException e) {
+                                        if (e == null) {
+                                            Toast.makeText(getApplicationContext(),
+                                                    "New Profile created",
+                                                    Toast.LENGTH_LONG).show();
+                                        } else {
+                                            Toast.makeText(getApplicationContext(),
+                                                    "Profile creation Error",
+                                                    Toast.LENGTH_LONG).show();
+                                        }
+                                    }
+                                });
                             } else {
                                 Toast.makeText(getApplicationContext(),
                                         "Sign up Error",
@@ -101,6 +122,8 @@ public class LoginSignupActivity extends AppCompatActivity {
                             }
                         }
                     });
+
+
                 }
             }
         });

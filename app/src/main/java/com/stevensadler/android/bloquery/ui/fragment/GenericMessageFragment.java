@@ -15,10 +15,12 @@ import java.lang.ref.WeakReference;
 /**
  * Created by Steven on 1/10/2016.
  */
-public class GenericMessageFragment extends Fragment implements View.OnClickListener {
+public class GenericMessageFragment extends Fragment implements
+        IDelegatingFragment,
+        View.OnClickListener {
 
     public static interface Delegate {
-        public void onGenericMessageClicked(GenericMessageFragment genericMessageFragment, String message);
+        public void onGenericMessageClicked(String message);
     }
 
     private static String TAG = GenericMessageFragment.class.getSimpleName();
@@ -53,9 +55,13 @@ public class GenericMessageFragment extends Fragment implements View.OnClickList
     public void onClick(View view) {
         Log.d(TAG, "onClick");
         if (getDelegate() != null) {
-            getDelegate().onGenericMessageClicked(GenericMessageFragment.this, mGenericMessage);
+            getDelegate().onGenericMessageClicked(mGenericMessage);
         }
     }
+
+    /*
+     *
+     */
 
     public Delegate getDelegate() {
         if (delegate == null) {
@@ -64,8 +70,16 @@ public class GenericMessageFragment extends Fragment implements View.OnClickList
         return delegate.get();
     }
 
-    public void setDelegate(Delegate delegate) {
-        this.delegate = new WeakReference<Delegate>(delegate);
+    /*
+     * IDelegatingFragment
+     */
+    public void setDelegate(IFragmentDelegate iFragmentDelegate) {
+        if (iFragmentDelegate != null) {
+            Delegate delegate = (Delegate) iFragmentDelegate;
+            if (delegate != null) {
+                this.delegate = new WeakReference<Delegate>(delegate);
+            }
+        }
     }
 }
 

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tv_fragment_profile_editor_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryDark"
+            android:text="@string/profile_editor_title"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp"
+            android:layout_marginRight="24dp"
+            android:layout_marginLeft="24dp"
+            android:gravity="center_horizontal" />
+
+        <TextView
+            android:id="@+id/tv_fragment_profile_editor_user"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryDark"
+            android:text="user"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp"
+            android:layout_marginRight="24dp"
+            android:layout_marginLeft="24dp"
+            android:gravity="center_horizontal" />
+
+        <EditText
+            android:id="@+id/et_fragment_profile_editor_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryDark"
+            android:text="user description"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp"
+            android:layout_marginRight="24dp"
+            android:layout_marginLeft="24dp"
+            android:gravity="center_horizontal" />
+
+        <ImageView
+            android:id="@+id/iv_fragment_profile_editor_image"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:gravity="center_horizontal"
+            android:layout_gravity="center_horizontal" />
+
+        <Button
+            android:id="@+id/b_fragment_profile_editor_load_gallery"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryDark"
+            android:text="@string/profile_gallery_button"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:layout_marginRight="24dp"
+            android:layout_marginLeft="24dp" />
+
+        <Button
+            android:id="@+id/b_fragment_profile_editor_load_camera"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryDark"
+            android:text="@string/profile_camera_button"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:layout_marginRight="24dp"
+            android:layout_marginLeft="24dp" />
+
+        <Button
+            android:id="@+id/b_fragment_profile_editor_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryDark"
+            android:text="@string/profile_editor_save"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:layout_marginRight="24dp"
+            android:layout_marginLeft="24dp" />
+
+        <Button
+            android:id="@+id/b_fragment_profile_editor_exit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryDark"
+            android:text="@string/profile_editor_exit"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:layout_marginRight="24dp"
+            android:layout_marginLeft="24dp" />
+
+    </LinearLayout>
+
+</ScrollView>
