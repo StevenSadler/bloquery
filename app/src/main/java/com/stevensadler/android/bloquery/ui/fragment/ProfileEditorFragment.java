@@ -110,9 +110,10 @@ public class ProfileEditorFragment extends Fragment implements
 
         mDescriptionText.setText(BloqueryApplication.getSharedDataSource().getCurrentUserProfileDescription());
         mBitmap = BloqueryApplication.getSharedDataSource().getCurrentUserProfileImage();
-        if (mBitmap != null) {
-            mImageView.setImageBitmap(mBitmap);
-        }
+//        if (mBitmap == null) {
+//            mBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.default_avatar);
+//        }
+        mImageView.setImageBitmap(mBitmap);
         return view;
     }
 

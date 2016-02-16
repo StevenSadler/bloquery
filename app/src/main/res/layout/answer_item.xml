@@ -7,6 +7,7 @@
 
     <ImageView
         android:id="@+id/iv_answer_item_image"
+        android:background="@drawable/default_avatar"
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:scaleType="centerCrop"/>

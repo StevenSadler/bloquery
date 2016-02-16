@@ -10,9 +10,12 @@ import android.widget.Toast;
 
 import com.parse.LogInCallback;
 import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.parse.SignUpCallback;
 import com.stevensadler.android.bloquery.R;
+
+import java.util.ArrayList;
 
 /**
  * Created by Steven on 12/31/2015.
@@ -87,6 +90,7 @@ public class LoginSignupActivity extends AppCompatActivity {
                     user.setUsername(usernameText);
                     user.setPassword(passwordText);
                     user.put("profileDescription", "Welcome " + usernameText);
+                    user.put("upvotedAnswerList", new ArrayList<ParseObject>());
                     user.signUpInBackground(new SignUpCallback() {
                         @Override
                         public void done(ParseException e) {

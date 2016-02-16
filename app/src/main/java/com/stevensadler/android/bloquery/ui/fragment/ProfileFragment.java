@@ -64,6 +64,9 @@ public class ProfileFragment extends Fragment implements
         mUserNameView.setText(mUserName);
         mDescriptionText.setText(mUserProfileDescription);
         Bitmap bitmap = BloqueryApplication.getSharedDataSource().getUserProfileImage(mUserId);
+//        if (bitmap == null) {
+//            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.default_avatar);
+//        }
         mImageView.setImageBitmap(bitmap);
         return view;
     }

@@ -15,13 +15,15 @@
             android:id="@+id/ll_fragment_single_question"
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:padding="16dp">
 
             <ImageView
                 android:id="@+id/iv_fragment_single_question_image"
+                android:background="@drawable/default_avatar"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
-                android:paddingBottom="10dp"/>
+                android:scaleType="centerCrop"/>
 
             <TextView
                 android:id="@+id/tv_fragment_single_question"
@@ -29,10 +31,8 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/colorPrimaryDark"
                 android:text="test question"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="12dp"
-                android:layout_marginRight="24dp"
-                android:layout_marginLeft="24dp"/>
+                android:layout_marginRight="10dp"
+                android:layout_marginLeft="10dp"/>
 
         </LinearLayout>
 
@@ -48,23 +48,36 @@
             android:layout_marginRight="24dp"
             android:layout_marginLeft="24dp" />
 
-        <Button
-            android:id="@+id/b_fragment_single_question_submit_answer"
+        <LinearLayout
+            android:id="@+id/ll_fragment_single_question_buttons"
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/colorPrimaryDark"
-            android:text="Submit Answer"
-            android:layout_below="@+id/et_fragment_single_question_answer"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp"
-            android:layout_marginRight="24dp"
-            android:layout_marginLeft="24dp" />
+            android:layout_below="@+id/et_fragment_single_question_answer" >
+
+            <Button
+                android:id="@+id/b_fragment_single_question_exit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/colorPrimaryDark"
+                android:text="@string/single_question_exit"/>
+
+            <Button
+                android:id="@+id/b_fragment_single_question_submit_answer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/colorPrimaryDark"
+                android:text="@string/single_question_submit_answer"/>
+
+        </LinearLayout>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rv_fragment_single_question_answer_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/b_fragment_single_question_submit_answer"/>
+            android:layout_below="@+id/ll_fragment_single_question_buttons"/>
 
     </RelativeLayout>
 

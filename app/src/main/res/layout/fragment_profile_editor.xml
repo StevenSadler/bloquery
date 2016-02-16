@@ -47,54 +47,58 @@
 
         <ImageView
             android:id="@+id/iv_fragment_profile_editor_image"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
+            android:background="@drawable/default_avatar"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:scaleType="centerCrop"
             android:gravity="center_horizontal"
             android:layout_gravity="center_horizontal" />
 
-        <Button
-            android:id="@+id/b_fragment_profile_editor_load_gallery"
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/colorPrimaryDark"
-            android:text="@string/profile_gallery_button"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="6dp"
-            android:layout_marginRight="24dp"
-            android:layout_marginLeft="24dp" />
+            android:layout_height="wrap_content"  >
 
-        <Button
-            android:id="@+id/b_fragment_profile_editor_load_camera"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/colorPrimaryDark"
-            android:text="@string/profile_camera_button"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="6dp"
-            android:layout_marginRight="24dp"
-            android:layout_marginLeft="24dp" />
+            <Button
+                android:id="@+id/b_fragment_profile_editor_load_gallery"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/colorPrimaryDark"
+                android:text="@string/profile_gallery_button"/>
 
-        <Button
-            android:id="@+id/b_fragment_profile_editor_save"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/colorPrimaryDark"
-            android:text="@string/profile_editor_save"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="6dp"
-            android:layout_marginRight="24dp"
-            android:layout_marginLeft="24dp" />
+            <Button
+                android:id="@+id/b_fragment_profile_editor_load_camera"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/colorPrimaryDark"
+                android:text="@string/profile_camera_button" />
 
-        <Button
-            android:id="@+id/b_fragment_profile_editor_exit"
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/colorPrimaryDark"
-            android:text="@string/profile_editor_exit"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="6dp"
-            android:layout_marginRight="24dp"
-            android:layout_marginLeft="24dp" />
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/b_fragment_profile_editor_exit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/colorPrimaryDark"
+                android:text="@string/profile_editor_exit" />
+
+            <Button
+                android:id="@+id/b_fragment_profile_editor_save"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/colorPrimaryDark"
+                android:text="@string/profile_editor_save" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
