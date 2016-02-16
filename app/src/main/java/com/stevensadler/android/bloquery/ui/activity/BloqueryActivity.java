@@ -18,7 +18,6 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.stevensadler.android.bloquery.R;
-import com.stevensadler.android.bloquery.test.TestQuestionCreator;
 import com.stevensadler.android.bloquery.ui.BloqueryApplication;
 import com.stevensadler.android.bloquery.ui.fragment.AddQuestionDialogFragment;
 import com.stevensadler.android.bloquery.ui.fragment.GenericMessageFragment;
@@ -28,6 +27,11 @@ import com.stevensadler.android.bloquery.ui.fragment.ProfileEditorFragment;
 import com.stevensadler.android.bloquery.ui.fragment.ProfileFragment;
 import com.stevensadler.android.bloquery.ui.fragment.QuestionListFragment;
 import com.stevensadler.android.bloquery.ui.fragment.SingleQuestionFragment;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class BloqueryActivity extends AppCompatActivity implements
         IFragmentDelegate,
@@ -47,7 +51,7 @@ public class BloqueryActivity extends AppCompatActivity implements
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        TestQuestionCreator testQC = new TestQuestionCreator();
+//        TestQuestionCreator testQC = new TestQuestionCreator();
 //        testQC.addQuestion("Public write access to untracked author question created by " + ParseUser.getCurrentUser().getUsername());
 //        testQC.addQuestion("An untracked author question created by " + ParseUser.getCurrentUser().getUsername());
 //        testQC.addQuestion("A question created by " + ParseUser.getCurrentUser().getUsername());
@@ -113,6 +117,8 @@ public class BloqueryActivity extends AppCompatActivity implements
 
         } else if (savedInstanceState == null) {
             // the activity IS NOT being re-created
+
+            //testSortList();
             addQuestionListFragment();
         } else {
             // the activity IS being re-created
@@ -199,6 +205,16 @@ public class BloqueryActivity extends AppCompatActivity implements
 
         BloqueryApplication.getSharedNetworkManager().addAnswer(question, answerBody);
         getFragmentManager().popBackStack();
+    }
+
+    public void onAnswerUpvoteClicked(ParseObject answer, String questionId) {
+        Log.d(TAG, "onAnswerUpvoteClicked");
+        BloqueryApplication.getSharedNetworkManager().upvoteAnswer(answer, questionId);
+    }
+
+    public void onAnswerDownvoteClicked(ParseObject answer, String questionId) {
+        Log.d(TAG, "onAnswerDownvoteClicked");
+        BloqueryApplication.getSharedNetworkManager().downvoteAnswer(answer, questionId);
     }
 
     /*
@@ -355,6 +371,50 @@ public class BloqueryActivity extends AppCompatActivity implements
         } else {
         /* below */
             return Settings.System.getInt(context.getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) != 0;
+        }
+    }
+
+    private void testSortList() {
+        List<ParseObject> list = new ArrayList<ParseObject>();
+        list.add(createParseObjectWithRank(2));
+        list.add(createParseObjectWithRank(5));
+        list.add(createParseObjectWithRank(1));
+
+        outputList(list);
+
+//        // ascending sort
+//        Collections.sort(list, new Comparator<ParseObject>() {
+//
+//            @Override
+//            public int compare(ParseObject object1, ParseObject object2) {
+//                Log.d(TAG, "object1.getInt(rank) = " + object1.getInt("rank") + " object2.getInt(rank) = " + object2.getInt("rank"));
+//                return object1.getInt("rank") - object2.getInt("rank");
+//            }
+//        });
+
+        // descending sort
+        Collections.sort(list, new Comparator<ParseObject>() {
+
+            @Override
+            public int compare(ParseObject object1, ParseObject object2) {
+                Log.d(TAG, "object1.getInt(rank) = " + object1.getInt("rank") + " object2.getInt(rank) = " + object2.getInt("rank"));
+                return object2.getInt("rank") - object1.getInt("rank");
+            }
+        });
+
+        outputList(list);
+    }
+
+    private ParseObject createParseObjectWithRank(int rank) {
+        ParseObject parseObject = new ParseObject("TestSort");
+        parseObject.put("rank", rank);
+        return parseObject;
+    }
+
+    private void outputList(List<ParseObject> list) {
+        Log.d(TAG, "outputList");
+        for (int i = 0; i < list.size(); i++) {
+            Log.d(TAG, "i = " + i + " rank = " + list.get(i).getInt("rank"));
         }
     }
 }
