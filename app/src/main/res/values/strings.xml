@@ -13,6 +13,9 @@
     <string name="action_profile">Profile</string>
     <string name="action_refresh_data">Refresh</string>
 
+    <string name="single_question_submit_answer">Submit Answer</string>
+    <string name="single_question_exit">Back to Questions</string>
+
     <string name="action_add_question">Add a Question</string>
     <string name="cancel_button">Cancel</string>
     <string name="accept_button">OK</string>

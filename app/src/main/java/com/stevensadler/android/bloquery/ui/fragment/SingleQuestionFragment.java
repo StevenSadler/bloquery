@@ -52,6 +52,7 @@ public class SingleQuestionFragment extends Fragment implements
     private TextView mTextView;
     private EditText mEditText;
     private Button mSubmitButton;
+    private Button mExitButton;
 
     private RecyclerView mRecyclerView;
     private AnswerAdapter mAnswerAdapter;
@@ -80,6 +81,7 @@ public class SingleQuestionFragment extends Fragment implements
         mTextView = (TextView) view.findViewById(R.id.tv_fragment_single_question);
         mEditText = (EditText) view.findViewById(R.id.et_fragment_single_question_answer);
         mSubmitButton = (Button) view.findViewById(R.id.b_fragment_single_question_submit_answer);
+        mExitButton = (Button) view.findViewById(R.id.b_fragment_single_question_exit);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.rv_fragment_single_question_answer_list);
 
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
@@ -94,9 +96,9 @@ public class SingleQuestionFragment extends Fragment implements
         mQuestionAuthorImageView.setImageBitmap(bitmap);
 
         mTextView.setText(mQuestion.getString("body"));
-        mTextView.setOnClickListener(this);
         mEditText.setText("");
         mSubmitButton.setOnClickListener(this);
+        mExitButton.setOnClickListener(this);
         mQuestionAuthorImageView.setOnClickListener(this);
         return view;
     }
@@ -120,8 +122,8 @@ public class SingleQuestionFragment extends Fragment implements
     @Override
     public void onClick(View view) {
         Log.d(TAG, "onClick");
-        if (view == mTextView) {
-            Log.d(TAG, "onClick mTextView");
+        if (view == mExitButton) {
+            Log.d(TAG, "onClick mExitButton");
             if (getDelegate() != null) {
                 getDelegate().onSingleQuestionClicked(mQuestion);
             }
@@ -184,24 +186,6 @@ public class SingleQuestionFragment extends Fragment implements
         if (question != null) {
             mQuestion = question;
             List<ParseObject> answers = mQuestion.getList("answerList");
-
-//            //ParseObject[] answersArray = new ParseObject[answers.size()];
-//            //answers.toArray(answersArray);
-//            Log.d(TAG, "answers - " + answers.get(0).getInt("upvoteCount") + " " + answers.get(0).get("body"));
-//            Log.d(TAG, "answers - " + answers.get(1).getInt("upvoteCount") + " " + answers.get(1).get("body"));
-//
-//            Collections.sort(answers, new Comparator<ParseObject>() {
-//
-//                @Override
-//                public int compare(ParseObject object1, ParseObject object2) {
-//                    Log.d(TAG, "object1.getInt(upvoteCount) = " + object1.getInt("upvoteCount") + " object2.getInt(upvoteCount) = " + object2.getInt("upvoteCount"));
-//                    return object2.getInt("upvoteCount") - object1.getInt("upvoteCount");
-//                }
-//            });
-//
-//            Log.d(TAG, "answers - " + answers.get(0).getInt("upvoteCount") + " " + answers.get(0).get("body"));
-//            Log.d(TAG, "answers - " + answers.get(1).getInt("upvoteCount") + " " + answers.get(1).get("body"));
-
 
             mAnswerAdapter = new AnswerAdapter(sortByDescendingUpvotes(answers));
             mAnswerAdapter.setDelegate(this);
