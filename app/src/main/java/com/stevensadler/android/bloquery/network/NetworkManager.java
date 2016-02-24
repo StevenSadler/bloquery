@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -23,6 +24,7 @@ public class NetworkManager {
     public interface Delegate {
         public void onPullQuestions(List<ParseObject> objects);
         public void onCurrentUserProfileUpdate();
+        public void onPullSingleQuestion(ParseObject question);
         //public void onPullCurrentUserProfile(byte[] data, String description);
     }
 
@@ -45,6 +47,24 @@ public class NetworkManager {
                 if (e == null) {
                     if (getDelegate() != null) {
                         getDelegate().onPullQuestions(objects);
+                    }
+                } else {
+                    Log.d(TAG, "parse query: Error: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    public void pullSingleQuestion(String questionId) {
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Question");
+        query.include("answerList");
+        query.getInBackground(questionId, new GetCallback<ParseObject>() {
+            @Override
+            public void done(ParseObject object, ParseException e) {
+                if (e == null) {
+                    if (getDelegate() != null) {
+                        getDelegate().onPullSingleQuestion(object);
                     }
                 } else {
                     Log.d(TAG, "parse query: Error: " + e.getMessage());
@@ -135,36 +155,14 @@ public class NetworkManager {
         ParseObject answer = ParseObject.create("Answer");
         answer.put("body", body);
         answer.put("createdBy", ParseUser.getCurrentUser());
+        answer.put("upvoteCount", 0);
         answer.saveInBackground();
 
         question.add("answerList", answer);
         question.saveInBackground();
     }
 
-    //public void saveProfile(final ParseObject profile, Bitmap bitmap, String description) {
     public void saveProfile(Bitmap bitmap, String description) {
-
-//        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-//        byte[] image = stream.toByteArray();
-//
-//        ParseFile parseFile = new ParseFile("user.jpeg", image);
-//
-//        profile.put("description", description);
-//        profile.put("imageFile", parseFile);
-//        profile.saveInBackground(new SaveCallback() {
-//            @Override
-//            public void done(ParseException e) {
-//                if (e == null) {
-//                    Log.d(TAG, "Profile edited");
-//                    if (getDelegate() != null) {
-//                        getDelegate().onPullCurrentUserProfile(profile);
-//                    }
-//                } else {
-//                    Log.d(TAG, "Profile edit Error");
-//                }
-//            }
-//        });
 
         ImageFile imageFile = new ImageFile("user.jpeg", bitmap);
         ParseUser currentUser = ParseUser.getCurrentUser();
@@ -184,6 +182,75 @@ public class NetworkManager {
             }
         });
 
+    }
+
+    public void upvoteAnswer(ParseObject currentAnswer, final String questionId) {
+        Log.d(TAG, "upvoteAnswer");
+        ParseUser currentUser = ParseUser.getCurrentUser();
+        List<ParseObject> answers = currentUser.getList("upvotedAnswerList");
+        for (ParseObject answer : answers) {
+            if (answer.getObjectId().equals(currentAnswer.getObjectId())) {
+
+
+                return;
+            }
+        }
+
+        // add the answer to the user's upvotedAnswerList
+        // increment the upvote count on the answer
+        currentUser.add("upvotedAnswerList", currentAnswer);
+        currentUser.saveInBackground();
+
+        currentAnswer.increment("upvoteCount");
+        //currentAnswer.saveInBackground();
+
+        currentAnswer.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e == null) {
+                    Log.d(TAG, "Answer upvote increment, for now pull questions");
+                    pullSingleQuestion(questionId);
+//                    if (getDelegate() != null) {
+//                        getDelegate().onAnswerVoteUpdate();
+//                    }
+                } else {
+                    Log.d(TAG, "Answer upvote increment Error");
+                }
+            }
+        });
+    }
+
+    public void downvoteAnswer(ParseObject currentAnswer, final String questionId) {
+        Log.d(TAG, "downvoteAnswer");
+        ParseUser currentUser = ParseUser.getCurrentUser();
+        List<ParseObject> answers = currentUser.getList("upvotedAnswerList");
+        for (ParseObject answer : answers) {
+            if (answer.getObjectId().equals(currentAnswer.getObjectId())) {
+                // remove the answer from the user's upvotedAnswerList
+                // decrement the upvote count on the answer
+                answers.remove(answer);
+                currentUser.put("upvotedAnswerList", answers);
+                currentUser.saveInBackground();
+
+                currentAnswer.increment("upvoteCount", -1);
+                currentAnswer.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if (e == null) {
+                            Log.d(TAG, "Answer upvote decrement, for now pull questions");
+                            pullSingleQuestion(questionId);
+//                            if (getDelegate() != null) {
+//                                getDelegate().onAnswerVoteUpdate();
+//                            }
+                        } else {
+                            Log.d(TAG, "Answer upvote decrement Error");
+                        }
+                    }
+                });
+
+                return;
+            }
+        }
     }
 
     /*

@@ -24,6 +24,7 @@ public class DataSource extends Observable implements
 
     private String TAG = DataSource.class.getSimpleName();
 
+    private ParseObject mSingleQuestion;
     private List<ParseObject> mQuestions;
     private Bitmap mCurrentUserProfileImage;
     private String mCurrentUserProfileDescription;
@@ -57,6 +58,11 @@ public class DataSource extends Observable implements
     }
 
     public ParseObject getQuestionById(String questionObjectId) {
+        // if questions have been added such that the current question viewed is no longer in the pull set
+        // then get the question from mSingleQuestion
+        if (mSingleQuestion != null && mSingleQuestion.getObjectId().equals(questionObjectId)) {
+            return mSingleQuestion;
+        }
         for (ParseObject question : mQuestions) {
             if (question.getObjectId().equals(questionObjectId)) {
                 return question;
@@ -110,6 +116,24 @@ public class DataSource extends Observable implements
     }
 
     @Override
+    public void onPullSingleQuestion(ParseObject currentQuestion) {
+        for (ParseObject question :mQuestions) {
+            if (question.getObjectId().equals(currentQuestion.getObjectId())) {
+                question.put("answerList", currentQuestion.get("answerList"));
+                setChanged();
+                notifyObservers();
+                clearChanged();
+                return;
+            }
+        }
+
+        mSingleQuestion = currentQuestion;
+        setChanged();
+        notifyObservers();
+        clearChanged();
+    }
+
+    @Override
     public void onCurrentUserProfileUpdate() {
         // clear old data references
         mCurrentUserProfileDescription = "";
@@ -126,6 +150,19 @@ public class DataSource extends Observable implements
 //        setChanged();
 //        notifyObservers();
 //        clearChanged();
+    }
+
+    /*
+     *
+     */
+    public Boolean didUserVoteOnAnswer(ParseUser parseUser, ParseObject currentAnswer) {
+        List<ParseObject> answers = parseUser.getList("upvotedAnswerList");
+        for (ParseObject answer : answers) {
+            if (answer.getObjectId().equals(currentAnswer.getObjectId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /*

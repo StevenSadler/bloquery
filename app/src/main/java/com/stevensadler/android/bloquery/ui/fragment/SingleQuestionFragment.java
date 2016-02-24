@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.parse.ParseObject;
 import com.parse.ParseUser;
@@ -21,6 +22,8 @@ import com.stevensadler.android.bloquery.ui.BloqueryApplication;
 import com.stevensadler.android.bloquery.ui.adapter.AnswerAdapter;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -38,6 +41,8 @@ public class SingleQuestionFragment extends Fragment implements
         public void onSingleQuestionClicked(ParseObject question);
         public void onSubmitAnswerClicked(ParseObject question, String answerBody);
         public void onUserProfileImageClicked(ParseUser parseUser);
+        public void onAnswerUpvoteClicked(ParseObject answer, String questionId);
+        public void onAnswerDownvoteClicked(ParseObject answer, String questionId);
     }
 
     private static String TAG = SingleQuestionFragment.class.getSimpleName();
@@ -63,7 +68,7 @@ public class SingleQuestionFragment extends Fragment implements
 
         mQuestion = BloqueryApplication.getSharedDataSource().getQuestionById(questionId);
         List<ParseObject> answers = mQuestion.getList("answerList");
-        mAnswerAdapter = new AnswerAdapter(answers);
+        mAnswerAdapter = new AnswerAdapter(sortByDescendingUpvotes(answers));
         mAnswerAdapter.setDelegate(this);
     }
 
@@ -96,6 +101,19 @@ public class SingleQuestionFragment extends Fragment implements
         return view;
     }
 
+    private List<ParseObject> sortByDescendingUpvotes(List<ParseObject> answers) {
+        List<ParseObject> sortedAnswers = answers;
+        Collections.sort(sortedAnswers, new Comparator<ParseObject>() {
+
+            @Override
+            public int compare(ParseObject object1, ParseObject object2) {
+                Log.d(TAG, "object1.getInt(upvoteCount) = " + object1.getInt("upvoteCount") + " object2.getInt(upvoteCount) = " + object2.getInt("upvoteCount"));
+                return object2.getInt("upvoteCount") - object1.getInt("upvoteCount");
+            }
+        });
+        return sortedAnswers;
+    }
+
     /*
      * View.OnClickListener
      */
@@ -112,7 +130,13 @@ public class SingleQuestionFragment extends Fragment implements
             if (getDelegate() != null) {
 
                 String answerBody = mEditText.getText().toString();
-                getDelegate().onSubmitAnswerClicked(mQuestion, answerBody);
+                if (answerBody.equals("")) {
+                    Toast.makeText(getActivity().getApplicationContext(),
+                            "Input an answer before saving",
+                            Toast.LENGTH_LONG).show();
+                } else {
+                    getDelegate().onSubmitAnswerClicked(mQuestion, answerBody);
+                }
             }
         } else if (view == mQuestionAuthorImageView) {
             Log.d(TAG, "onClick mQuestionAuthorImageView");
@@ -160,7 +184,26 @@ public class SingleQuestionFragment extends Fragment implements
         if (question != null) {
             mQuestion = question;
             List<ParseObject> answers = mQuestion.getList("answerList");
-            mAnswerAdapter = new AnswerAdapter(answers);
+
+//            //ParseObject[] answersArray = new ParseObject[answers.size()];
+//            //answers.toArray(answersArray);
+//            Log.d(TAG, "answers - " + answers.get(0).getInt("upvoteCount") + " " + answers.get(0).get("body"));
+//            Log.d(TAG, "answers - " + answers.get(1).getInt("upvoteCount") + " " + answers.get(1).get("body"));
+//
+//            Collections.sort(answers, new Comparator<ParseObject>() {
+//
+//                @Override
+//                public int compare(ParseObject object1, ParseObject object2) {
+//                    Log.d(TAG, "object1.getInt(upvoteCount) = " + object1.getInt("upvoteCount") + " object2.getInt(upvoteCount) = " + object2.getInt("upvoteCount"));
+//                    return object2.getInt("upvoteCount") - object1.getInt("upvoteCount");
+//                }
+//            });
+//
+//            Log.d(TAG, "answers - " + answers.get(0).getInt("upvoteCount") + " " + answers.get(0).get("body"));
+//            Log.d(TAG, "answers - " + answers.get(1).getInt("upvoteCount") + " " + answers.get(1).get("body"));
+
+
+            mAnswerAdapter = new AnswerAdapter(sortByDescendingUpvotes(answers));
             mAnswerAdapter.setDelegate(this);
             mRecyclerView.setAdapter(mAnswerAdapter);
         }
@@ -174,6 +217,22 @@ public class SingleQuestionFragment extends Fragment implements
         Log.d(TAG, "onUserProfileImageClicked");
         if (getDelegate() != null) {
             getDelegate().onUserProfileImageClicked(parseUser);
+        }
+    }
+
+    @Override
+    public void onAnswerUpvoteClicked(ParseObject answer) {
+        Log.d(TAG, "onAnswerUpvoteClicked");
+        if (getDelegate() != null) {
+            getDelegate().onAnswerUpvoteClicked(answer, mQuestion.getObjectId());
+        }
+    }
+
+    @Override
+    public void onAnswerDownvoteClicked(ParseObject answer) {
+        Log.d(TAG, "onAnswerDownvoteClicked");
+        if (getDelegate() != null) {
+            getDelegate().onAnswerDownvoteClicked(answer, mQuestion.getObjectId());
         }
     }
 }
